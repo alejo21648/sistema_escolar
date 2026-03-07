@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Notas{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="fw-bold mb-0"><i class="bi bi-pencil-square me-2 text-primary"></i>Notas</h2>
+  {% if user.es_profesor or user.es_admin %}
+  <a href="{% url 'notas:agregar' %}" class="btn btn-primary"><i class="bi bi-plus me-1"></i>Agregar Nota</a>
+  {% endif %}
+</div>
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr><th>Estudiante</th><th>Materia</th><th>Curso</th><th>Período</th><th>Nota</th><th>Descripción</th><th>Acciones</th></tr>
+      </thead>
+      <tbody>
+        {% for nota in notas %}
+        <tr>
+          <td>{{ nota.estudiante.get_full_name }}</td>
+          <td>{{ nota.asignacion.materia }}</td>
+          <td>{{ nota.asignacion.curso }}</td>
+          <td>P{{ nota.periodo }}</td>
+          <td>
+            <span class="badge {% if nota.valor >= 6 %}bg-success{% elif nota.valor >= 4 %}bg-warning text-dark{% else %}bg-danger{% endif %} fs-6">
+              {{ nota.valor }}
+            </span>
+          </td>
+          <td>{{ nota.descripcion|default:"-" }}</td>
+          <td>
+            {% if user.es_profesor or user.es_admin %}
+            <a href="{% url 'notas:editar' nota.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
+            <a href="{% url 'notas:eliminar' nota.pk %}" class="btn btn-sm btn-outline-danger">Eliminar</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-center py-4 text-muted">No hay notas registradas.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

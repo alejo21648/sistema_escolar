@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}Registro de Estudiante{% endblock %}
+
+{% block auth_content %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #1a3a5c 0%, #0d6efd 100%)">
+  <div class="card p-4 p-md-5" style="width: 100%; max-width: 600px;">
+    <div class="text-center mb-4">
+      <i class="bi bi-person-plus-fill text-primary" style="font-size: 2.5rem;"></i>
+      <h2 class="fw-bold mt-2">Registro de Estudiante</h2>
+      <p class="text-muted">Crea tu cuenta con el código que te proporcionó la institución</p>
+    </div>
+
+    <div class="alert alert-info" role="alert">
+      <i class="bi bi-info-circle me-2"></i>
+      <strong>Importante:</strong> Necesitarás el código de estudiante que te asignó la institución para poder registrarte.
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          <strong>Error:</strong> {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      <!-- Datos Personales -->
+      <h5 class="mb-3 mt-4"><i class="bi bi-file-person me-2"></i>Datos Personales</h5>
+      
+      <div class="mb-3">
+        <label class="form-label fw-semibold">{{ form.first_name.label }} <span class="text-danger">*</span></label>
+        {{ form.first_name }}
+        {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">{{ form.last_name.label }} <span class="text-danger">*</span></label>
+        {{ form.last_name }}
+        {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">{{ form.email.label }} <span class="text-danger">*</span></label>
+        {{ form.email }}
+        {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">{{ form.telefono.label }}</label>
+        {{ form.telefono }}
+        {% if form.telefono.errors %}<div class="text-danger small mt-1">{{ form.telefono.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">{{ form.fecha_nacimiento.label }}</label>
+        {{ form.fecha_nacimiento }}
+        {% if form.fecha_nacimiento.errors %}<div class="text-danger small mt-1">{{ form.fecha_nacimiento.errors.0 }}</div>{% endif %}
+      </div>
+
+      <!-- Credenciales -->
+      <h5 class="mb-3 mt-4"><i class="bi bi-key me-2"></i>Credenciales</h5>
+      
+      <div class="mb-3">
+        <label class="form-label fw-semibold">{{ form.username.label }} <span class="text-danger">*</span></label>
+        {{ form.username }}
+        {% if form.username.errors %}<div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">{{ form.password1.label }} <span class="text-danger">*</span></label>
+        {{ form.password1 }}
+        {% if form.password1.errors %}<div class="text-danger small mt-1">{{ form.password1.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">{{ form.password2.label }} <span class="text-danger">*</span></label>
+        {{ form.password2 }}
+        {% if form.password2.errors %}<div class="text-danger small mt-1">{{ form.password2.errors.0 }}</div>{% endif %}
+      </div>
+
+      <!-- Código de Estudiante -->
+      <h5 class="mb-3 mt-4"><i class="bi bi-code-square me-2"></i>Código de Acceso</h5>
+      
+      <div class="mb-3">
+        <label class="form-label fw-semibold">{{ form.codigo_estudiante.label }} <span class="text-danger">*</span></label>
+        {{ form.codigo_estudiante }}
+        <div class="form-text">
+          <i class="bi bi-exclamation-circle me-1"></i>Este código es único y te lo debe proporcionar la institución. Los acudientes usarán este código para relacionarse contigo.
+        </div>
+        {% if form.codigo_estudiante.errors %}<div class="text-danger small mt-1 fw-semibold">{{ form.codigo_estudiante.errors.0 }}</div>{% endif %}
+      </div>
+
+      <!-- Foto de Perfil -->
+      <h5 class="mb-3 mt-4"><i class="bi bi-image me-2"></i>Foto de Perfil (Opcional)</h5>
+      <div class="mb-3">
+        <label class="form-label fw-semibold">{{ form.foto.label }}</label>
+        {{ form.foto }}
+        {% if form.foto.errors %}<div class="text-danger small mt-1">{{ form.foto.errors.0 }}</div>{% endif %}
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100 btn-lg fw-semibold mt-4">
+        <i class="bi bi-person-check me-2"></i>Crear Cuenta
+      </button>
+    </form>
+
+    <div class="text-center mt-3">
+      <p class="mb-0">¿Ya tienes cuenta? <a href="{% url 'usuarios:login' %}" class="text-primary fw-semibold">Inicia sesión aquí</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

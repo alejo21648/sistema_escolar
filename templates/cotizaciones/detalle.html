@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Cotización #{{ cotizacion.pk }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="fw-bold mb-0">Cotización #{{ cotizacion.pk }}</h2>
+  <span class="badge {% if cotizacion.estado == 'APROBADA' %}bg-success{% elif cotizacion.estado == 'RECHAZADA' %}bg-danger{% else %}bg-warning text-dark{% endif %} fs-6">{{ cotizacion.get_estado_display }}</span>
+</div>
+<div class="row g-4">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header"><h5 class="mb-0">Items</h5></div>
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <thead class="table-light"><tr><th>Producto</th><th>Cantidad</th><th>Precio Unit.</th><th>Subtotal</th></tr></thead>
+          <tbody>
+            {% for item in cotizacion.items.all %}
+            <tr>
+              <td>{{ item.producto.nombre }}</td>
+              <td>{{ item.cantidad }}</td>
+              <td>${{ item.precio_unitario }}</td>
+              <td>${{ item.subtotal }}</td>
+            </tr>
+            {% endfor %}
+            <tr class="table-active"><td colspan="3"><strong>Total</strong></td><td><strong>${{ cotizacion.total }}</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <p><strong>Acudiente:</strong> {{ cotizacion.acudiente.get_full_name }}</p>
+        <p><strong>Fecha:</strong> {{ cotizacion.creada_en|date:"d/m/Y H:i" }}</p>
+        {% if cotizacion.observacion %}<p><strong>Obs:</strong> {{ cotizacion.observacion }}</p>{% endif %}
+        {% if user.es_admin %}
+        <hr>
+        <form method="post" action="{% url 'cotizaciones:cambiar_estado' cotizacion.pk %}">
+          {% csrf_token %}
+          <select name="estado" class="form-select mb-2">
+            <option value="PENDIENTE">Pendiente</option>
+            <option value="APROBADA">Aprobada</option>
+            <option value="RECHAZADA">Rechazada</option>
+          </select>
+          <button type="submit" class="btn btn-primary w-100">Actualizar Estado</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

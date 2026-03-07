@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Actividades{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="fw-bold mb-0"><i class="bi bi-clipboard me-2 text-info"></i>Actividades</h2>
+  {% if user.es_profesor %}
+  <a href="{% url 'actividades:crear' %}" class="btn btn-primary"><i class="bi bi-plus me-1"></i>Crear Actividad</a>
+  {% endif %}
+</div>
+<div class="row g-3">
+  {% for actividad in actividades %}
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="fw-bold">{{ actividad.titulo }}</h5>
+        <p class="text-muted small">{{ actividad.descripcion|truncatechars:100 }}</p>
+        <div class="d-flex gap-2 flex-wrap">
+          <span class="badge bg-primary">{{ actividad.asignacion.materia }}</span>
+          <span class="badge bg-secondary">{{ actividad.asignacion.curso }}</span>
+          <span class="badge bg-warning text-dark">Valor: {{ actividad.valor_maximo }}</span>
+        </div>
+        <p class="text-muted small mt-2"><i class="bi bi-clock me-1"></i>Entrega: {{ actividad.fecha_entrega|date:"d/m/Y H:i" }}</p>
+      </div>
+      <div class="card-footer bg-transparent d-flex gap-2">
+        {% if user.es_profesor or user.es_admin %}
+        <a href="{% url 'actividades:detalle' actividad.pk %}" class="btn btn-sm btn-outline-primary">Ver entregas</a>
+        {% endif %}
+        {% if user.es_estudiante %}
+        <a href="{% url 'actividades:entregar' actividad.pk %}" class="btn btn-sm btn-primary">Entregar</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12"><p class="text-muted text-center py-5">No hay actividades.</p></div>
+  {% endfor %}
+</div>
+{% endblock %}
