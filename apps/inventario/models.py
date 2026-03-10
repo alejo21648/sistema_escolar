@@ -29,4 +29,8 @@ class Producto(models.Model):
         ordering            = ['nombre']
 
     def __str__(self):
+<<<<<<< HEAD
         return self.nombre
+=======
+        return f'{self.nombre} (${self.precio})'
+>>>>>>> 19d2c3af1c98f2eda2fa8b1aec62310d8c577731

@@ -1,11 +1,16 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+<<<<<<< HEAD
 from django.core.serializers.json import DjangoJSONEncoder
 from apps.inventario.models import Producto
 from .models import Cotizacion
 from .forms import CotizacionForm, ItemFormSet
 import json
+=======
+from .models import Cotizacion
+from .forms import CotizacionForm, ItemFormSet
+>>>>>>> 19d2c3af1c98f2eda2fa8b1aec62310d8c577731
 
 
 @login_required
@@ -24,6 +29,7 @@ def lista_cotizaciones(request):
 def crear_cotizacion(request):
     if not request.user.es_acudiente:
         return redirect('dashboard:home')
+<<<<<<< HEAD
 
     # Precios de productos para el JS (solo activos con stock)
     productos_qs = Producto.objects.filter(activo=True, stock__gt=0)
@@ -35,11 +41,16 @@ def crear_cotizacion(request):
     form    = CotizacionForm(request.POST or None)
     formset = ItemFormSet(request.POST or None)
 
+=======
+    form    = CotizacionForm(request.POST or None)
+    formset = ItemFormSet(request.POST or None)
+>>>>>>> 19d2c3af1c98f2eda2fa8b1aec62310d8c577731
     if form.is_valid() and formset.is_valid():
         cotizacion = form.save(commit=False)
         cotizacion.acudiente = request.user
         cotizacion.save()
         formset.instance = cotizacion
+<<<<<<< HEAD
 
         items = formset.save(commit=False)
         for item in items:
@@ -59,6 +70,14 @@ def crear_cotizacion(request):
         'formset': formset,
         'titulo': 'Nueva Cotización',
         'precios_json': precios_json,
+=======
+        formset.save()
+        cotizacion.calcular_total()
+        messages.success(request, 'Cotización enviada correctamente.')
+        return redirect('cotizaciones:lista')
+    return render(request, 'cotizaciones/form.html', {
+        'form': form, 'formset': formset, 'titulo': 'Nueva Cotización'
+>>>>>>> 19d2c3af1c98f2eda2fa8b1aec62310d8c577731
     })
 
 
