@@ -1,0 +1,33 @@
+# Variables de entorno y credenciales (NUNCA versionar)
+.env
+
+# Entorno virtual Python
+venv/
+env/
+.venv/
+
+# Archivos compilados Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Archivos estáticos generados
+staticfiles/
+
+# Archivos de media subidos
+media/*
+!media/.gitkeep
+
+# Django
+*.log
+db.sqlite3
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
