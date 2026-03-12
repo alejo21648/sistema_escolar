@@ -1,43 +1,134 @@
 {% extends 'base.html' %}
 {% block title %}Notas{% endblock %}
 {% block content %}
+
 <div class="d-flex justify-content-between align-items-center mb-4">
-  <h2 class="fw-bold mb-0"><i class="bi bi-pencil-square me-2 text-primary"></i>Notas</h2>
+  <h2 class="fw-bold mb-0">
+    <i class="bi bi-pencil-square me-2 text-primary"></i>Notas
+  </h2>
   {% if user.es_profesor or user.es_admin %}
-  <a href="{% url 'notas:agregar' %}" class="btn btn-primary"><i class="bi bi-plus me-1"></i>Agregar Nota</a>
+  <a href="{% url 'notas:agregar' %}" class="btn btn-primary">
+    <i class="bi bi-plus me-1"></i>Agregar Nota
+  </a>
   {% endif %}
 </div>
-<div class="card">
+
+<!-- ══════════════════════════════════════
+     TABLA 1: Notas de período
+══════════════════════════════════════ -->
+<div class="card mb-4 border-0 shadow-sm">
+  <div class="card-header bg-white border-0 pt-3 pb-2 px-4">
+    <h6 class="fw-bold text-primary mb-0">
+      <i class="bi bi-journal-text me-2"></i>Notas del Período
+    </h6>
+  </div>
   <div class="card-body p-0">
     <table class="table table-hover mb-0">
       <thead class="table-light">
-        <tr><th>Estudiante</th><th>Materia</th><th>Curso</th><th>Período</th><th>Nota</th><th>Descripción</th><th>Acciones</th></tr>
+        <tr>
+          {% if not user.es_estudiante %}<th>Estudiante</th>{% endif %}
+          <th>Materia</th><th>Curso</th><th>Período</th>
+          <th>Nota</th><th>Descripción</th>
+          {% if user.es_profesor or user.es_admin %}<th>Acciones</th>{% endif %}
+        </tr>
       </thead>
       <tbody>
         {% for nota in notas %}
         <tr>
+          {% if not user.es_estudiante %}
           <td>{{ nota.estudiante.get_full_name }}</td>
+          {% endif %}
           <td>{{ nota.asignacion.materia }}</td>
           <td>{{ nota.asignacion.curso }}</td>
-          <td>P{{ nota.periodo }}</td>
+          <td><span class="badge bg-secondary">P{{ nota.periodo }}</span></td>
           <td>
-            <span class="badge {% if nota.valor >= 6 %}bg-success{% elif nota.valor >= 4 %}bg-warning text-dark{% else %}bg-danger{% endif %} fs-6">
+            <span class="badge fs-6
+              {% if nota.valor >= 6 %}bg-success
+              {% elif nota.valor >= 4 %}bg-warning text-dark
+              {% else %}bg-danger{% endif %}">
               {{ nota.valor }}
             </span>
           </td>
-          <td>{{ nota.descripcion|default:"-" }}</td>
+          <td>{{ nota.descripcion|default:"—" }}</td>
+          {% if user.es_profesor or user.es_admin %}
           <td>
-            {% if user.es_profesor or user.es_admin %}
-            <a href="{% url 'notas:editar' nota.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
-            <a href="{% url 'notas:eliminar' nota.pk %}" class="btn btn-sm btn-outline-danger">Eliminar</a>
-            {% endif %}
+            <a href="{% url 'notas:editar' nota.pk %}" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <a href="{% url 'notas:eliminar' nota.pk %}" class="btn btn-sm btn-outline-danger">
+              <i class="bi bi-trash"></i>
+            </a>
           </td>
+          {% endif %}
         </tr>
         {% empty %}
-        <tr><td colspan="7" class="text-center py-4 text-muted">No hay notas registradas.</td></tr>
+        <tr>
+          <td colspan="7" class="text-center py-4 text-muted">
+            <i class="bi bi-inbox me-2"></i>No hay notas de período registradas.
+          </td>
+        </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
+
+<!-- ══════════════════════════════════════
+     TABLA 2: Notas de actividades
+     Solo visible para el estudiante
+══════════════════════════════════════ -->
+{% if user.es_estudiante %}
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white border-0 pt-3 pb-2 px-4">
+    <h6 class="fw-bold text-success mb-0">
+      <i class="bi bi-check2-circle me-2"></i>
+      Notas de Actividades Calificadas
+    </h6>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Actividad</th><th>Materia</th><th>Curso</th>
+          <th>Nota obtenida</th><th>Valor máx.</th>
+          <th>Retroalimentación</th><th>Fecha entrega</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entrega in notas_actividades %}
+        <tr>
+          <td class="fw-semibold">{{ entrega.actividad.titulo }}</td>
+          <td>{{ entrega.actividad.asignacion.materia }}</td>
+          <td>{{ entrega.actividad.asignacion.curso }}</td>
+          <td>
+            <span class="badge fs-6 bg-primary">
+              {{ entrega.calificacion }}
+            </span>
+          </td>
+          <td class="text-muted">/ {{ entrega.actividad.valor_maximo }}</td>
+          <td>
+            {% if entrega.retroalimentacion %}
+              <span class="text-muted small">
+                {{ entrega.retroalimentacion|truncatechars:60 }}
+              </span>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td class="text-muted small">{{ entrega.entregado_en|date:"d/m/Y H:i" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center py-4 text-muted">
+            <i class="bi bi-hourglass-split me-2"></i>
+            Aún no tienes actividades calificadas.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
 {% endblock %}

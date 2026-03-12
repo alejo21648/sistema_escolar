@@ -6,26 +6,49 @@ from .models import Nota
 from .forms import NotaForm
 from apps.academico.models import AsignacionProfesorMateria
 from apps.usuarios.models import Usuario
+from apps.actividades.models import EntregaActividad
 
 
 @login_required
 def lista_notas(request):
     user = request.user
+
     if user.es_profesor:
         notas = Nota.objects.filter(
             asignacion__profesor=user
         ).select_related('estudiante', 'asignacion__materia', 'asignacion__curso')
+        # El profesor ve sus notas normales (las de actividades se ven en actividades/detalle)
+        notas_actividades = []
+
     elif user.es_estudiante:
+        # Notas normales del estudiante
         notas = Nota.objects.filter(
             estudiante=user
         ).select_related('asignacion__materia', 'asignacion__curso', 'asignacion__profesor')
+
+        # Notas de actividades YA CALIFICADAS por el profesor
+        # Solo se muestran si tienen calificacion asignada (no null)
+        notas_actividades = EntregaActividad.objects.filter(
+            estudiante=user,
+            calificacion__isnull=False          # Solo las calificadas
+        ).select_related(
+            'actividad__asignacion__materia',
+            'actividad__asignacion__curso',
+            'actividad__asignacion__profesor'
+        ).order_by('-actividad__fecha_entrega')
+
     elif user.es_admin:
         notas = Nota.objects.all().select_related(
             'estudiante', 'asignacion__materia', 'asignacion__curso'
         )
+        notas_actividades = []
     else:
         return redirect('dashboard:home')
-    return render(request, 'notas/lista.html', {'notas': notas})
+
+    return render(request, 'notas/lista.html', {
+        'notas'            : notas,
+        'notas_actividades': notas_actividades,  # ← nuevo contexto
+    })
 
 
 @login_required
