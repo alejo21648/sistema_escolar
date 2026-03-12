@@ -5,13 +5,80 @@
 {% block contenido %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h3 class="mb-0"><i class="bi bi-journal-check me-2"></i>Actividades</h3>
-    {% if user.es_profesor or user.es_coordinador %}
+    {% if user.es_coordinador or user.es_profesor %}
     <a href="{% url 'academico:crear_actividad' %}" class="btn btn-primary">
         <i class="bi bi-plus-lg me-1"></i>Nueva actividad
     </a>
     {% endif %}
 </div>
 
+<!-- BARRA DE FILTROS -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+
+            <div class="col-md-4">
+                <label class="form-label fw-semibold small text-muted">
+                    <i class="bi bi-search me-1"></i>Buscar
+                </label>
+                <input type="text" name="q" value="{{ busqueda }}" class="form-control"
+                    placeholder="Título o descripción...">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-semibold small text-muted">
+                    <i class="bi bi-book me-1"></i>Materia
+                </label>
+                <select name="materia" class="form-select">
+                    <option value="">Todas las materias</option>
+                    {% for materia in materias %}
+                        {% if materia.pk == materia_id_int %}
+                        <option value="{{ materia.pk }}" selected>{{ materia.nombre }}</option>
+                        {% else %}
+                        <option value="{{ materia.pk }}">{{ materia.nombre }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-semibold small text-muted">
+                    <i class="bi bi-calendar3 me-1"></i>Periodo
+                </label>
+                <select name="periodo" class="form-select">
+                    <option value="">Todos los periodos</option>
+                    {% for value, label in periodos %}
+                        {% if periodo == value %}
+                        <option value="{{ value }}" selected>{{ label }}</option>
+                        {% else %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-funnel me-1"></i>Filtrar
+                </button>
+                <a href="{% url 'academico:lista_actividades' %}" class="btn btn-outline-secondary" title="Limpiar">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+{% if busqueda or materia_id or periodo %}
+<p class="text-muted small mb-2">
+    <i class="bi bi-info-circle me-1"></i>
+    {{ actividades.count }} resultado{{ actividades.count|pluralize }} encontrado{{ actividades.count|pluralize }}
+    {% if busqueda %} para "<strong>{{ busqueda }}</strong>"{% endif %}
+</p>
+{% endif %}
+
+<!-- TABLA -->
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
         <table class="table table-hover mb-0">
@@ -20,53 +87,66 @@
                     <th>Título</th>
                     <th>Materia</th>
                     <th>Curso</th>
+                    <th>Periodo</th>
                     <th>Fecha entrega</th>
-                    <th>Puntaje máx.</th>
                     <th>Entregas</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                {% for a in actividades %}
+                {% for actividad in actividades %}
                 <tr>
-                    <td><strong>{{ a.titulo }}</strong></td>
-                    <td>{{ a.asignacion.materia.nombre }}</td>
-                    <td>{{ a.asignacion.curso.nombre }}</td>
+                    <td><strong>{{ actividad.titulo }}</strong></td>
+                    <td>{{ actividad.asignacion.materia.nombre }}</td>
                     <td>
-                        {{ a.fecha_entrega|date:"d/m/Y" }}
-                    </td>
-                    <td>{{ a.puntaje_maximo }}</td>
-                    <td>
-                        <span class="badge bg-secondary">
-                            {{ a.entregas.count }} entrega(s)
+                        <span class="badge bg-light text-dark border">
+                            {{ actividad.asignacion.curso.nombre }}
                         </span>
                     </td>
                     <td>
-                        <a href="{% url 'academico:detalle_actividad' a.pk %}"
-                            class="btn btn-sm btn-outline-primary me-1">
-                            <i class="bi bi-eye"></i>
-                        </a>
-                        {% if user.es_estudiante %}
-                        <a href="{% url 'academico:entregar_actividad' a.pk %}" class="btn btn-sm btn-success">
-                            <i class="bi bi-upload me-1"></i>Entregar
-                        </a>
+                        {% if actividad.periodo %}
+                            <span class="badge bg-primary">{{ actividad.get_periodo_display }}</span>
+                        {% else %}
+                            <span class="text-muted small">—</span>
                         {% endif %}
-                        {% if user.es_profesor or user.es_coordinador %}
-                        <a href="{% url 'academico:editar_actividad' a.pk %}"
-                            class="btn btn-sm btn-outline-secondary me-1">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <a href="{% url 'academico:eliminar_actividad' a.pk %}" class="btn btn-sm btn-outline-danger">
-                            <i class="bi bi-trash"></i>
-                        </a>
-                        {% endif %}
+                    </td>
+                    <td>{{ actividad.fecha_entrega|date:"d/m/Y" }}</td>
+                    <td>
+                        <span class="badge bg-light text-dark border">
+                            {{ actividad.entregas.count }} entrega{{ actividad.entregas.count|pluralize }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a href="{% url 'academico:detalle_actividad' actividad.pk %}"
+                               class="btn btn-sm btn-outline-info" title="Ver detalle">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            {% if user.es_coordinador or user.es_profesor %}
+                            <a href="{% url 'academico:editar_actividad' actividad.pk %}"
+                               class="btn btn-sm btn-outline-warning" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="post"
+                                  action="{% url 'academico:eliminar_actividad' actividad.pk %}"
+                                  style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="btn btn-sm btn-outline-danger"
+                                        title="Eliminar"
+                                        onclick="return confirm('¿Eliminar la actividad {{ actividad.titulo }}?')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7" class="text-center text-muted py-5">
-                        <i class="bi bi-journal-x fs-3 d-block mb-2"></i>
-                        No hay actividades registradas.
+                    <td colspan="7" class="text-center text-muted py-4">
+                        <i class="bi bi-search me-2"></i>
+                        No se encontraron actividades con los filtros aplicados.
                     </td>
                 </tr>
                 {% endfor %}

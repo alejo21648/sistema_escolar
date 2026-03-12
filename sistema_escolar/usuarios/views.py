@@ -392,3 +392,25 @@ def registro_acudiente_view(request):
         'usuario_form': usuario_form,
         'form_acu':     form_acu,
     })
+@login_required
+@solo_coordinador
+def eliminar_usuario(request, pk):
+    usuario = get_object_or_404(Usuario, pk=pk)
+
+    if usuario.is_superuser:
+        messages.error(request, 'No puedes eliminar al superusuario.')
+        return redirect('usuarios:lista_usuarios')
+
+    if usuario == request.user:
+        messages.error(request, 'No puedes eliminarte a ti mismo.')
+        return redirect('usuarios:lista_usuarios')
+
+    if request.method == 'POST':
+        nombre = usuario.get_full_name()
+        usuario.delete()
+        messages.success(request, f'Usuario {nombre} eliminado correctamente.')
+        return redirect('usuarios:lista_usuarios')
+
+    return render(request, 'usuarios/confirmar_eliminar_usuario.html', {
+        'usuario': usuario,
+    })

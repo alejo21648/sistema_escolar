@@ -51,6 +51,13 @@ class Producto(models.Model):
     def __str__(self):
         return f'{self.nombre} (${self.precio})'
 
+    def save(self, *args, **kwargs):
+        if self.nombre:
+            self.nombre = self.nombre.strip().capitalize()
+        if self.descripcion:
+            self.descripcion = self.descripcion.strip().capitalize()
+        super().save(*args, **kwargs)
+
 
 class Cotizacion(models.Model):
     """
@@ -102,6 +109,11 @@ class Cotizacion(models.Model):
 
     def __str__(self):
         return f'Cotización #{self.id} - {self.acudiente}'
+
+    def save(self, *args, **kwargs):
+        if self.observaciones:
+            self.observaciones = self.observaciones.strip().capitalize()
+        super().save(*args, **kwargs)
 
     def calcular_total(self):
         """Recalcula y guarda el total sumando todos los detalles."""

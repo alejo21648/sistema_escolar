@@ -232,6 +232,13 @@ class Actividad(models.Model):
         default=5.0,
         verbose_name='Puntaje máximo'
     )
+    periodo = models.CharField(
+        max_length=20,
+        choices=Nota.Periodo.choices,
+        null=True,
+        blank=True,
+        verbose_name='Periodo académico'
+    )
 
     class Meta:
         verbose_name = 'Actividad'

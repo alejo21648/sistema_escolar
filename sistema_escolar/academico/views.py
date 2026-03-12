@@ -187,9 +187,12 @@ def eliminar_materia(request, pk):
 
 @login_required
 def lista_asignaciones(request):
+    from django.db import models as db_models
+    from usuarios.models import Profesor
+
     user = request.user
+
     if user.es_profesor():
-        from usuarios.models import Profesor
         profesor     = get_object_or_404(Profesor, usuario=user)
         asignaciones = Asignacion.objects.filter(
             profesor=profesor
@@ -198,10 +201,39 @@ def lista_asignaciones(request):
         asignaciones = Asignacion.objects.all().select_related(
             'curso', 'materia', 'profesor__usuario'
         )
-    return render(request, 'academico/lista_asignaciones.html', {
-        'asignaciones': asignaciones
-    })
 
+    busqueda   = request.GET.get('q', '')
+    curso_id   = request.GET.get('curso', '')
+    materia_id = request.GET.get('materia', '')
+
+    if busqueda:
+        asignaciones = asignaciones.filter(
+            db_models.Q(curso__nombre__icontains=busqueda)                 |
+            db_models.Q(materia__nombre__icontains=busqueda)               |
+            db_models.Q(profesor__usuario__first_name__icontains=busqueda) |
+            db_models.Q(profesor__usuario__last_name__icontains=busqueda)
+        )
+    if curso_id:
+        asignaciones = asignaciones.filter(curso_id=curso_id)
+    if materia_id:
+        asignaciones = asignaciones.filter(materia_id=materia_id)
+
+    cursos   = Curso.objects.all().order_by('nombre')
+    materias = Materia.objects.all().order_by('nombre')
+
+    curso_id_int   = int(curso_id)   if curso_id   else None
+    materia_id_int = int(materia_id) if materia_id else None
+
+    return render(request, 'academico/lista_asignaciones.html', {
+        'asignaciones':  asignaciones,
+        'busqueda':      busqueda,
+        'curso_id':      curso_id,
+        'materia_id':    materia_id,
+        'curso_id_int':  curso_id_int,
+        'materia_id_int': materia_id_int,
+        'cursos':        cursos,
+        'materias':      materias,
+    })
 
 @login_required
 @solo_coordinador
@@ -481,7 +513,9 @@ def reporte_asistencia(request):
 
 @login_required
 def lista_actividades(request):
+    from django.db import models as db_models
     from usuarios.models import Profesor as ProfesorModel, Estudiante as EstudianteModel
+
     user = request.user
 
     if user.es_profesor():
@@ -501,8 +535,34 @@ def lista_actividades(request):
             'asignacion__materia', 'asignacion__curso'
         ).order_by('-fecha_entrega')
 
+    # Filtros
+    busqueda   = request.GET.get('q', '')
+    materia_id = request.GET.get('materia', '')
+    periodo    = request.GET.get('periodo', '')
+
+    if busqueda:
+        actividades = actividades.filter(
+            db_models.Q(titulo__icontains=busqueda) |
+            db_models.Q(descripcion__icontains=busqueda)
+        )
+    if materia_id:
+        actividades = actividades.filter(asignacion__materia_id=materia_id)
+    if periodo:
+        actividades = actividades.filter(periodo=periodo)
+
+    materias = Materia.objects.all().order_by('nombre')
+    periodos  = Nota.Periodo.choices
+
+    materia_id_int = int(materia_id) if materia_id else None
+
     return render(request, 'academico/lista_actividades.html', {
-        'actividades': actividades
+        'actividades':    actividades,
+        'busqueda':       busqueda,
+        'materia_id':     materia_id,
+        'materia_id_int': materia_id_int,
+        'periodo':        periodo,
+        'materias':       materias,
+        'periodos':       periodos,
     })
 
 
@@ -615,15 +675,28 @@ def calificar_entrega(request, pk):
     entrega = get_object_or_404(EntregaActividad, pk=pk)
     form    = CalificarEntregaForm(request.POST or None, instance=entrega)
     if form.is_valid():
-        form.save()
-        messages.success(request, f'Entrega de {entrega.estudiante.usuario.get_full_name()} calificada.')
+        entrega = form.save()
+
+        # Crear o actualizar la nota automáticamente
+        if entrega.nota_obtenida is not None:
+            Nota.objects.update_or_create(
+                estudiante = entrega.estudiante,
+                asignacion = entrega.actividad.asignacion,
+                periodo    = entrega.actividad.periodo,
+                defaults   = {'valor': entrega.nota_obtenida}
+            )
+
+        messages.success(
+            request,
+            f'Entrega de {entrega.estudiante.usuario.get_full_name()} calificada.'
+        )
         return redirect('academico:detalle_actividad', pk=entrega.actividad.pk)
+
     return render(request, 'academico/form_calificar.html', {
         'form':    form,
         'entrega': entrega,
         'titulo':  'Calificar entrega',
     })
-
 
 # ─────────────────────────────────────────
 # REPORTES Y ESTADÍSTICAS

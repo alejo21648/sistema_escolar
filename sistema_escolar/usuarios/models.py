@@ -42,9 +42,18 @@ class Usuario(AbstractUser):
     def __str__(self):
         return f'{self.get_full_name()} ({self.get_rol_display()})'
 
+    def save(self, *args, **kwargs):
+        if self.first_name:
+            self.first_name = self.first_name.strip().title()
+        if self.last_name:
+            self.last_name = self.last_name.strip().title()
+        if self.username:
+            self.username = self.username.strip().lower()
+        super().save(*args, **kwargs)
+
     # Métodos de conveniencia para verificar roles en templates y vistas
     def es_coordinador(self):
-    # El superusuario siempre es coordinador
+        # El superusuario siempre es coordinador
         return self.rol == self.Rol.COORDINADOR or self.is_superuser
 
     def es_profesor(self):
@@ -93,6 +102,11 @@ class Estudiante(models.Model):
     def __str__(self):
         return f'{self.usuario.get_full_name()} - {self.curso}'
 
+    def save(self, *args, **kwargs):
+        if self.codigo_estudiantil:
+            self.codigo_estudiantil = self.codigo_estudiantil.strip().upper()
+        super().save(*args, **kwargs)
+
 
 class Profesor(models.Model):
     """
@@ -119,6 +133,11 @@ class Profesor(models.Model):
 
     def __str__(self):
         return f'Prof. {self.usuario.get_full_name()}'
+
+    def save(self, *args, **kwargs):
+        if self.especialidad:
+            self.especialidad = self.especialidad.strip().capitalize()
+        super().save(*args, **kwargs)
 
 
 class Acudiente(models.Model):
@@ -151,3 +170,8 @@ class Acudiente(models.Model):
 
     def __str__(self):
         return f'{self.usuario.get_full_name()} (Acudiente)'
+
+    def save(self, *args, **kwargs):
+        if self.parentesco:
+            self.parentesco = self.parentesco.strip().capitalize()
+        super().save(*args, **kwargs)

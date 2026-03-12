@@ -25,11 +25,6 @@ urlpatterns = [
     path('asignaciones/<int:pk>/editar/',    views.editar_asignacion,    name='editar_asignacion'),
     path('asignaciones/<int:pk>/eliminar/',  views.eliminar_asignacion,  name='eliminar_asignacion'),
 
-    # Notas
-    path('notas/',                  views.lista_notas,  name='lista_notas'),
-    path('notas/nueva/',            views.crear_nota,   name='crear_nota'),
-    path('notas/<int:pk>/editar/',  views.editar_nota,  name='editar_nota'),
-
     # Asistencias
     path('asistencias/',                        views.lista_asistencias,    name='lista_asistencias'),
     path('asistencias/registrar/',              views.registrar_asistencia, name='registrar_asistencia'),

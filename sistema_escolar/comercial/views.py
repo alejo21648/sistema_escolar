@@ -14,9 +14,35 @@ from .decorators import solo_coordinador, coordinador_o_acudiente
 
 @login_required
 def lista_productos(request):
+    from django.db import models as db_models
+
     productos = Producto.objects.all().order_by('categoria', 'nombre')
+
+    # Filtros
+    busqueda  = request.GET.get('q', '')
+    categoria = request.GET.get('categoria', '')
+    estado    = request.GET.get('estado', '')
+
+    if busqueda:
+        productos = productos.filter(
+            db_models.Q(nombre__icontains=busqueda) |
+            db_models.Q(descripcion__icontains=busqueda)
+        )
+    if categoria:
+        productos = productos.filter(categoria=categoria)
+    if estado == 'activo':
+        productos = productos.filter(activo=True)
+    elif estado == 'inactivo':
+        productos = productos.filter(activo=False)
+
+    categorias = Producto.Categoria.choices
+
     return render(request, 'comercial/lista_productos.html', {
-        'productos': productos
+        'productos':  productos,
+        'busqueda':   busqueda,
+        'categoria':  categoria,
+        'estado':     estado,
+        'categorias': categorias,
     })
 
 
@@ -70,7 +96,9 @@ def eliminar_producto(request, pk):
 
 @login_required
 def lista_cotizaciones(request):
+    from django.db import models as db_models
     user = request.user
+
     if user.es_acudiente():
         from usuarios.models import Acudiente
         acudiente    = get_object_or_404(Acudiente, usuario=user)
@@ -81,8 +109,27 @@ def lista_cotizaciones(request):
         cotizaciones = Cotizacion.objects.all().select_related(
             'acudiente__usuario'
         ).order_by('-fecha')
+
+    # Filtros
+    busqueda = request.GET.get('q', '')
+    estado   = request.GET.get('estado', '')
+
+    if busqueda:
+        cotizaciones = cotizaciones.filter(
+            db_models.Q(acudiente__usuario__first_name__icontains=busqueda) |
+            db_models.Q(acudiente__usuario__last_name__icontains=busqueda)  |
+            db_models.Q(observaciones__icontains=busqueda)
+        )
+    if estado:
+        cotizaciones = cotizaciones.filter(estado=estado)
+
+    estados = Cotizacion.estado.field.choices if hasattr(Cotizacion.estado, 'field') else []
+
     return render(request, 'comercial/lista_cotizaciones.html', {
-        'cotizaciones': cotizaciones
+        'cotizaciones': cotizaciones,
+        'busqueda':     busqueda,
+        'estado':       estado,
+        'estados':      estados,
     })
 
 

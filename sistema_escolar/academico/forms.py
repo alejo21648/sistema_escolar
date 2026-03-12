@@ -68,7 +68,7 @@ class AsistenciaForm(forms.ModelForm):
 class ActividadForm(forms.ModelForm):
     class Meta:
         model  = Actividad
-        fields = ['asignacion', 'titulo', 'descripcion', 'fecha_entrega', 'puntaje_maximo']
+        fields = ['asignacion', 'titulo', 'descripcion', 'fecha_entrega', 'puntaje_maximo', 'periodo']
         widgets = {
             'asignacion':     forms.Select(attrs={'class': 'form-select'}),
             'titulo':         forms.TextInput(attrs={'class': 'form-control'}),
@@ -78,11 +78,11 @@ class ActividadForm(forms.ModelForm):
                                 'class': 'form-control',
                                 'step': '0.1', 'min': '1.0', 'max': '5.0'
                             }),
+            'periodo':        forms.Select(attrs={'class': 'form-select'}),
         }
 
 
 class EntregaActividadForm(forms.ModelForm):
-    """Formulario para que el estudiante entregue una actividad."""
     class Meta:
         model  = EntregaActividad
         fields = ['archivo', 'comentario']
@@ -96,7 +96,6 @@ class EntregaActividadForm(forms.ModelForm):
 
 
 class CalificarEntregaForm(forms.ModelForm):
-    """Formulario para que el profesor califique una entrega."""
     class Meta:
         model  = EntregaActividad
         fields = ['nota_obtenida']

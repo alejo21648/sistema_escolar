@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block titulo %}Asignaciones{% endblock %}
+{% block page_title %}Asignaciones{% endblock %}
 
 {% block contenido %}
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -11,6 +12,71 @@
     {% endif %}
 </div>
 
+<!-- BARRA DE FILTROS -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+
+            <div class="col-md-4">
+                <label class="form-label fw-semibold small text-muted">
+                    <i class="bi bi-search me-1"></i>Buscar
+                </label>
+                <input type="text" name="q" value="{{ busqueda }}" class="form-control"
+                    placeholder="Curso, materia o profesor...">
+            </div>
+
+            {% if user.es_coordinador %}
+            <div class="col-md-3">
+                <label class="form-label fw-semibold small text-muted">
+                    <i class="bi bi-grid-3x3-gap me-1"></i>Curso
+                </label>
+                <select name="curso" class="form-select">
+                    <option value="">Todos los cursos</option>
+                    {% for curso in cursos %}
+                    <option value="{{ curso.pk }}" {% if curso.pk == curso_id_int %}selected{% endif %}>
+                        {{ curso.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-semibold small text-muted">
+                    <i class="bi bi-book me-1"></i>Materia
+                </label>
+                <select name="materia" class="form-select">
+                    <option value="">Todas las materias</option>
+                    {% for materia in materias %}
+                    <option value="{{ materia.pk }}" {% if materia.pk == materia_id_int %}selected{% endif %}>
+                        {{ materia.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-funnel me-1"></i>Filtrar
+                </button>
+                <a href="{% url 'academico:lista_asignaciones' %}" class="btn btn-outline-secondary" title="Limpiar">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+{% if busqueda or curso_id or materia_id %}
+<p class="text-muted small mb-2">
+    <i class="bi bi-info-circle me-1"></i>
+    {{ asignaciones.count }} resultado{{ asignaciones.count|pluralize }} encontrado{{ asignaciones.count|pluralize }}
+    {% if busqueda %} para "<strong>{{ busqueda }}</strong>"{% endif %}
+</p>
+{% endif %}
+
+<!-- TABLA -->
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
         <table class="table table-hover mb-0">
@@ -19,33 +85,48 @@
                     <th>Materia</th>
                     <th>Curso</th>
                     <th>Profesor</th>
-                    <th>Año</th>
-                    <th>Acciones</th>
+                    <th>Año escolar</th>
+                    {% if user.es_coordinador %}<th>Acciones</th>{% endif %}
                 </tr>
             </thead>
             <tbody>
-                {% for a in asignaciones %}
+                {% for asig in asignaciones %}
                 <tr>
-                    <td><strong>{{ a.materia.nombre }}</strong></td>
-                    <td>{{ a.curso.nombre }}</td>
-                    <td>{{ a.profesor.usuario.get_full_name }}</td>
-                    <td>{{ a.año_escolar }}</td>
+                    <td><strong>{{ asig.materia.nombre }}</strong></td>
                     <td>
-                        {% if user.es_coordinador %}
-                        <a href="{% url 'academico:editar_asignacion' a.pk %}"
-                            class="btn btn-sm btn-outline-secondary me-1">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <a href="{% url 'academico:eliminar_asignacion' a.pk %}" class="btn btn-sm btn-outline-danger">
-                            <i class="bi bi-trash"></i>
-                        </a>
-                        {% endif %}
+                        <span class="badge bg-light text-dark border">
+                            {{ asig.curso.nombre }}
+                        </span>
                     </td>
+                    <td>{{ asig.profesor.usuario.get_full_name }}</td>
+                    <td>{{ asig.curso.año_escolar }}</td>
+                    {% if user.es_coordinador %}
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a href="{% url 'academico:editar_asignacion' asig.pk %}"
+                               class="btn btn-sm btn-outline-warning" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="post"
+                                  action="{% url 'academico:eliminar_asignacion' asig.pk %}"
+                                  style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="btn btn-sm btn-outline-danger"
+                                        title="Eliminar"
+                                        onclick="return confirm('¿Eliminar esta asignación?')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                    {% endif %}
                 </tr>
                 {% empty %}
                 <tr>
                     <td colspan="5" class="text-center text-muted py-4">
-                        No hay asignaciones registradas.
+                        <i class="bi bi-search me-2"></i>
+                        No se encontraron asignaciones con los filtros aplicados.
                     </td>
                 </tr>
                 {% endfor %}
