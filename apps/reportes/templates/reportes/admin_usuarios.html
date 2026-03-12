@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}Reporte de Usuarios{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h3 class="fw-bold mb-0"><i class="bi bi-people me-2 text-primary"></i>Reporte de Usuarios</h3>
+  <a href="javascript:window.print()" class="btn btn-outline-secondary btn-sm"><i class="bi bi-printer me-1"></i>Imprimir</a>
+</div>
+
+<!-- Tarjetas por rol -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="card text-center stat-card">
+      <div class="card-body">
+        <div class="fs-2 fw-bold text-primary">{{ total_administradores }}</div>
+        <div class="text-muted small">Administradores</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card text-center stat-card">
+      <div class="card-body">
+        <div class="fs-2 fw-bold text-success">{{ total_profesores }}</div>
+        <div class="text-muted small">Profesores</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card text-center stat-card">
+      <div class="card-body">
+        <div class="fs-2 fw-bold text-warning">{{ total_estudiantes }}</div>
+        <div class="text-muted small">Estudiantes</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card text-center stat-card">
+      <div class="card-body">
+        <div class="fs-2 fw-bold text-info">{{ total_acudientes }}</div>
+        <div class="text-muted small">Acudientes</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card text-center stat-card bg-dark text-white">
+      <div class="card-body">
+        <div class="fs-2 fw-bold">{{ total_usuarios }}</div>
+        <div class="small opacity-75">Total Usuarios</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Nuevos usuarios -->
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header fw-semibold"><i class="bi bi-person-plus me-1 text-success"></i>Nuevos (últimos 30 días)</div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm table-hover mb-0">
+            <thead class="table-light"><tr><th>Nombre</th><th>Rol</th><th>Fecha</th></tr></thead>
+            <tbody>
+              {% for u in nuevos %}
+              <tr>
+                <td>{{ u.get_full_name }}</td>
+                <td><span class="badge bg-secondary">{{ u.get_rol_display }}</span></td>
+                <td class="small text-muted">{{ u.date_joined|date:"d M Y" }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="3" class="text-center text-muted py-3">Sin nuevos usuarios.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alertas -->
+  <div class="col-lg-6">
+    <div class="card mb-3">
+      <div class="card-header fw-semibold text-warning"><i class="bi bi-exclamation-triangle me-1"></i>Acudientes sin hijo vinculado ({{ acudientes_sin_hijo|length }})</div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush">
+          {% for u in acudientes_sin_hijo %}
+          <li class="list-group-item py-2 px-3 d-flex justify-content-between">
+            <span>{{ u.get_full_name }}</span>
+            <span class="text-muted small">cod: {{ u.codigo_hijo|default:"—" }}</span>
+          </li>
+          {% empty %}
+          <li class="list-group-item text-muted text-center py-3">✔ Todos vinculados</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header fw-semibold text-danger"><i class="bi bi-person-x me-1"></i>Estudiantes sin curso ({{ sin_curso.count }})</div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush">
+          {% for u in sin_curso %}
+          <li class="list-group-item py-2 px-3">{{ u.get_full_name }}</li>
+          {% empty %}
+          <li class="list-group-item text-muted text-center py-3">✔ Todos en curso</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

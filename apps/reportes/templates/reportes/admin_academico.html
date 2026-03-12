@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% block title %}Reporte Académico{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h3 class="fw-bold mb-0"><i class="bi bi-bar-chart me-2 text-primary"></i>Reporte Académico</h3>
+  <a href="javascript:window.print()" class="btn btn-outline-secondary btn-sm"><i class="bi bi-printer me-1"></i>Imprimir</a>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card stat-card text-center">
+      <div class="card-body">
+        <div class="fs-2 fw-bold text-primary">{{ total_notas }}</div>
+        <div class="text-muted small">Total notas registradas</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Promedios por materia -->
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header fw-semibold"><i class="bi bi-book me-1 text-primary"></i>Promedio por Materia</div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm table-hover mb-0">
+            <thead class="table-light"><tr><th>Materia</th><th>Promedio</th><th>Notas</th><th>Estado</th></tr></thead>
+            <tbody>
+              {% for m in promedios_materia %}
+              <tr>
+                <td>{{ m.asignacion__materia__nombre }}</td>
+                <td>
+                  <strong class="{% if m.promedio >= 6 %}text-success{% else %}text-danger{% endif %}">
+                    {{ m.promedio|floatformat:2 }}
+                  </strong>
+                </td>
+                <td class="text-muted small">{{ m.total_notas }}</td>
+                <td>
+                  {% if m.promedio >= 7 %}<span class="badge bg-success">Bueno</span>
+                  {% elif m.promedio >= 6 %}<span class="badge bg-warning text-dark">Regular</span>
+                  {% else %}<span class="badge bg-danger">Bajo</span>{% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="4" class="text-center text-muted py-3">Sin datos.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Promedios por período -->
+  <div class="col-lg-6">
+    <div class="card mb-3">
+      <div class="card-header fw-semibold"><i class="bi bi-calendar3 me-1 text-primary"></i>Promedio por Período</div>
+      <div class="card-body p-0">
+        <table class="table table-sm table-hover mb-0">
+          <thead class="table-light"><tr><th>Período</th><th>Promedio</th><th>Notas</th></tr></thead>
+          <tbody>
+            {% for p in promedios_periodo %}
+            <tr>
+              <td>Período {{ p.periodo }}</td>
+              <td><strong class="{% if p.promedio >= 6 %}text-success{% else %}text-danger{% endif %}">{{ p.promedio|floatformat:2 }}</strong></td>
+              <td class="text-muted small">{{ p.total_notas }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-center text-muted py-3">Sin datos.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Cursos -->
+    <div class="card">
+      <div class="card-header fw-semibold"><i class="bi bi-building me-1 text-primary"></i>Estadísticas por Curso</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead class="table-light"><tr><th>Curso</th><th>Estudiantes</th><th>Asignaciones</th></tr></thead>
+          <tbody>
+            {% for c in cursos_stats %}
+            <tr>
+              <td>{{ c.nombre }}</td>
+              <td><span class="badge bg-primary">{{ c.num_estudiantes }}</span></td>
+              <td><span class="badge bg-secondary">{{ c.num_asignaciones }}</span></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-center text-muted py-3">Sin cursos activos.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Top estudiantes -->
+<div class="row g-3 mt-1">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header fw-semibold text-success"><i class="bi bi-trophy me-1"></i>Top 10 Mejores Promedios</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead class="table-light"><tr><th>#</th><th>Estudiante</th><th>Promedio</th></tr></thead>
+          <tbody>
+            {% for e in top_mejores %}
+            <tr>
+              <td class="text-muted">{{ forloop.counter }}</td>
+              <td>{{ e.estudiante__first_name }} {{ e.estudiante__last_name }}</td>
+              <td><strong class="text-success">{{ e.promedio|floatformat:2 }}</strong></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header fw-semibold text-danger"><i class="bi bi-arrow-down me-1"></i>10 Promedios más Bajos</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead class="table-light"><tr><th>#</th><th>Estudiante</th><th>Promedio</th></tr></thead>
+          <tbody>
+            {% for e in top_peores %}
+            <tr>
+              <td class="text-muted">{{ forloop.counter }}</td>
+              <td>{{ e.estudiante__first_name }} {{ e.estudiante__last_name }}</td>
+              <td><strong class="text-danger">{{ e.promedio|floatformat:2 }}</strong></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

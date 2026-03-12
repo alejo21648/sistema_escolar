@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}Reporte de Carga de Trabajo{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h3 class="fw-bold mb-0"><i class="bi bi-briefcase me-2 text-primary"></i>Reporte de Carga de Trabajo</h3>
+  <a href="javascript:window.print()" class="btn btn-outline-secondary btn-sm"><i class="bi bi-printer me-1"></i>Imprimir</a>
+</div>
+
+<!-- Resumen -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card stat-card text-center">
+      <div class="card-body">
+        <div class="fs-2 fw-bold text-primary">{{ total_asignaciones }}</div>
+        <div class="text-muted small">Asignaciones activas</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card stat-card text-center">
+      <div class="card-body">
+        <div class="fs-2 fw-bold text-secondary">{{ total_actividades }}</div>
+        <div class="text-muted small">Actividades creadas</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card stat-card text-center border-warning">
+      <div class="card-body">
+        <div class="fs-2 fw-bold text-warning">{{ total_entregas_pen }}</div>
+        <div class="text-muted small">Entregas sin calificar</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Carga por profesor -->
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header fw-semibold"><i class="bi bi-person-badge me-1 text-primary"></i>Carga por Profesor</div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm table-hover mb-0">
+            <thead class="table-light"><tr><th>Profesor</th><th>Asignaciones</th><th>Actividades</th></tr></thead>
+            <tbody>
+              {% for p in profesores %}
+              <tr>
+                <td>{{ p.get_full_name }}</td>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="progress flex-grow-1" style="height:6px;min-width:60px;">
+                      <div class="progress-bar" style="width:{% widthratio p.num_asignaciones 10 100 %}%"></div>
+                    </div>
+                    <span class="badge bg-primary">{{ p.num_asignaciones }}</span>
+                  </div>
+                </td>
+                <td><span class="badge bg-secondary">{{ p.num_actividades }}</span></td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="3" class="text-center text-muted py-3">Sin profesores.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actividades con entregas pendientes -->
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header fw-semibold text-warning">
+        <i class="bi bi-clock-history me-1"></i>Actividades con Entregas Pendientes de Calificar
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm table-hover mb-0">
+            <thead class="table-light"><tr><th>Actividad</th><th>Profesor</th><th>Pendientes</th></tr></thead>
+            <tbody>
+              {% for act in actividades_pendientes %}
+              <tr>
+                <td>
+                  <div class="fw-semibold small">{{ act.titulo|truncatechars:30 }}</div>
+                  <div class="text-muted" style="font-size:.75rem;">{{ act.asignacion.materia }} · {{ act.asignacion.curso }}</div>
+                </td>
+                <td class="small">{{ act.asignacion.profesor.get_full_name }}</td>
+                <td><span class="badge bg-warning text-dark">{{ act.pendientes }}</span></td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="3" class="text-center text-muted py-3">✔ Todo calificado</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

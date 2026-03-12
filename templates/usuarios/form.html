@@ -1,0 +1,150 @@
+{% extends 'generic_form.html' %}
+
+{% block extra_css %}
+<style>
+  .campo-estudiante { display: none; }
+  .campo-acudiente { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h4 class="mb-0"><i class="bi bi-pencil-square me-2"></i>{{ titulo }}</h4>
+      </div>
+      <div class="card-body">
+        {% if form.instance.pk %}
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Usuario:</strong> {{ form.instance.get_full_name }} ({{ form.instance.get_rol_display }})
+          </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+              <strong>Error:</strong> {{ form.non_field_errors }}
+            </div>
+          {% endif %}
+
+          <!-- rol field para cambiar dinámicamente los campos -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">
+              {{ form.rol.label }}
+              {% if form.rol.field.required %}<span class="text-danger">*</span>{% endif %}
+            </label>
+            {{ form.rol }}
+            {% if form.rol.errors %}<div class="text-danger small mt-1">{{ form.rol.errors.0 }}</div>{% endif %}
+          </div>
+
+          <!-- Campos básicos -->
+          {% for field in form %}
+            {% if field.name not in 'rol,codigo_estudiante,codigo_hijo,password1,password2' %}
+              <div class="mb-3">
+                <label class="form-label fw-semibold">
+                  {{ field.label }}
+                  {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                </label>
+                {{ field }}
+                {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                {% if field.errors %}<div class="text-danger small mt-1">{{ field.errors.0 }}</div>{% endif %}
+              </div>
+            {% endif %}
+          {% endfor %}
+
+          <!-- Contraseñas (solo si es creación) -->
+          {% if not form.instance.pk %}
+            <h5 class="mt-4 mb-3"><i class="bi bi-key me-2"></i>Contraseña</h5>
+            {% for field in form %}
+              {% if field.name in 'password1,password2' %}
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">
+                    {{ field.label }}
+                    {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                  </label>
+                  {{ field }}
+                  {% if field.errors %}<div class="text-danger small mt-1">{{ field.errors.0 }}</div>{% endif %}
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+
+          <!-- Código de Estudiante -->
+          <div class="mb-3 campo-estudiante">
+            {% for field in form %}
+              {% if field.name == 'codigo_estudiante' %}
+                <label class="form-label fw-semibold">
+                  {{ field.label }}
+                  {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                </label>
+                {{ field }}
+                <div class="form-text">
+                  <i class="bi bi-info-circle me-1"></i>Código único para identificar al estudiante. Los acudientes usarán este código para relacionarse.
+                </div>
+                {% if field.errors %}<div class="text-danger small mt-1 fw-semibold">{{ field.errors.0 }}</div>{% endif %}
+              {% endif %}
+            {% endfor %}
+          </div>
+
+          <!-- Código del Hijo (para Acudiente) -->
+          <div class="mb-3 campo-acudiente">
+            {% for field in form %}
+              {% if field.name == 'codigo_hijo' %}
+                <label class="form-label fw-semibold">
+                  {{ field.label }}
+                </label>
+                {{ field }}
+                <div class="form-text">
+                  <i class="bi bi-info-circle me-1"></i>Ingresa el código del estudiante (hijo) para relacionarlos. Déjalo vacío si se actualizará después.
+                </div>
+                {% if field.errors %}<div class="text-danger small mt-1 fw-semibold">{{ field.errors.0 }}</div>{% endif %}
+              {% endif %}
+            {% endfor %}
+          </div>
+
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary flex-grow-1">
+              <i class="bi bi-check-circle me-2"></i>
+              {% if form.instance.pk %}Actualizar{% else %}Crear{% endif %}
+            </button>
+            <a href="{% url 'usuarios:lista' %}" class="btn btn-secondary">
+              <i class="bi bi-x-circle me-2"></i>Cancelar
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const rolSelect = document.querySelector('[name="rol"]');
+  const campoEstudiante = document.querySelector('.campo-estudiante');
+  const campoAcudiente = document.querySelector('.campo-acudiente');
+  
+  function actualizarCampos() {
+    const rolValue = rolSelect.value;
+    if (rolValue === 'ESTUDIANTE') {
+      campoEstudiante.style.display = 'block';
+      campoAcudiente.style.display = 'none';
+    } else if (rolValue === 'ACUDIENTE') {
+      campoEstudiante.style.display = 'none';
+      campoAcudiente.style.display = 'block';
+    } else {
+      campoEstudiante.style.display = 'none';
+      campoAcudiente.style.display = 'none';
+    }
+  }
+  
+  if (rolSelect) {
+    rolSelect.addEventListener('change', actualizarCampos);
+    actualizarCampos(); // Ejecutar al cargar
+  }
+});
+</script>
+{% endblock %}

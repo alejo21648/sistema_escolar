@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}{{ pub.titulo }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <!-- Breadcrumb -->
+    <nav class="mb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'blog:lista' %}">Blog</a></li>
+        {% if pub.categoria %}<li class="breadcrumb-item">{{ pub.categoria }}</li>{% endif %}
+        <li class="breadcrumb-item active text-truncate" style="max-width:200px;">{{ pub.titulo }}</li>
+      </ol>
+    </nav>
+
+    <!-- Publicación -->
+    <div class="card mb-4">
+      {% if pub.imagen %}
+      <img src="{{ pub.imagen.url }}" class="card-img-top" style="max-height:350px;object-fit:cover;" alt="{{ pub.titulo }}">
+      {% endif %}
+      <div class="card-body px-4 py-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div>
+            {% if pub.categoria %}<span class="badge bg-primary mb-2">{{ pub.categoria }}</span>{% endif %}
+            {% if pub.destacada %}<span class="badge bg-warning text-dark mb-2 ms-1"><i class="bi bi-star-fill me-1"></i>Destacada</span>{% endif %}
+            {% if pub.estado == 'BORRADOR' %}<span class="badge bg-secondary mb-2 ms-1">Borrador</span>{% endif %}
+            {% if pub.estado == 'ARCHIVADO' %}<span class="badge bg-dark mb-2 ms-1">Archivada</span>{% endif %}
+            <h2 class="fw-bold mb-0">{{ pub.titulo }}</h2>
+          </div>
+          {% if user.es_admin or pub.autor == user %}
+          <div class="dropdown">
+            <button class="btn btn-outline-secondary" data-bs-toggle="dropdown">
+              <i class="bi bi-three-dots-vertical"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="{% url 'blog:editar' pub.pk %}"><i class="bi bi-pencil me-1"></i>Editar</a></li>
+              <li><a class="dropdown-item text-danger" href="{% url 'blog:eliminar' pub.pk %}"><i class="bi bi-trash me-1"></i>Eliminar</a></li>
+            </ul>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Meta -->
+        <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom text-muted small">
+          <span><i class="bi bi-person-circle me-1"></i>{{ pub.autor.get_full_name }}</span>
+          <span><i class="bi bi-calendar me-1"></i>{{ pub.creada_en|date:"d \d\e F \d\e Y" }}</span>
+          {% if pub.actualizada != pub.creada_en %}
+          <span><i class="bi bi-arrow-clockwise me-1"></i>Actualizado {{ pub.actualizada|date:"d M Y" }}</span>
+          {% endif %}
+        </div>
+
+        <!-- Resumen destacado -->
+        {% if pub.resumen %}
+        <blockquote class="blockquote border-start border-4 border-primary ps-3 mb-4 text-muted fst-italic">
+          {{ pub.resumen }}
+        </blockquote>
+        {% endif %}
+
+        <!-- Contenido -->
+        <div class="blog-content" style="line-height:1.8;">
+          {{ pub.contenido|linebreaks }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Comentarios -->
+    <div class="card">
+      <div class="card-header fw-semibold">
+        <i class="bi bi-chat-dots me-1"></i>Comentarios ({{ comentarios.count }})
+      </div>
+      <div class="card-body">
+        {% for c in comentarios %}
+        <div class="d-flex gap-3 mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+          <div class="flex-shrink-0">
+            {% if c.autor.foto %}
+            <img src="{{ c.autor.foto.url }}" class="avatar" alt="">
+            {% else %}
+            <div class="avatar bg-secondary d-flex align-items-center justify-content-center text-white fw-bold" style="width:40px;height:40px;border-radius:50%;">
+              {{ c.autor.first_name|first|upper }}
+            </div>
+            {% endif %}
+          </div>
+          <div class="flex-grow-1">
+            <div class="d-flex justify-content-between">
+              <span class="fw-semibold small">{{ c.autor.get_full_name }}</span>
+              <div class="d-flex align-items-center gap-2">
+                <span class="text-muted small">{{ c.creado_en|date:"d M Y H:i" }}</span>
+                {% if user == c.autor or user.es_admin %}
+                <form method="post" action="{% url 'blog:eliminar_comentario' c.pk %}" class="m-0">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm('¿Eliminar comentario?')">
+                    <i class="bi bi-trash" style="font-size:.8rem;"></i>
+                  </button>
+                </form>
+                {% endif %}
+              </div>
+            </div>
+            <p class="mb-0 mt-1">{{ c.texto }}</p>
+          </div>
+        </div>
+        {% empty %}
+        <p class="text-muted text-center py-3">Sé el primero en comentar.</p>
+        {% endfor %}
+
+        <!-- Formulario comentario -->
+        <hr>
+        <h6 class="fw-semibold mb-3">Agregar comentario</h6>
+        <form method="post">
+          {% csrf_token %}
+          {{ form.texto }}
+          <button type="submit" class="btn btn-primary mt-2">
+            <i class="bi bi-send me-1"></i>Comentar
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <a href="{% url 'blog:lista' %}" class="btn btn-outline-secondary mt-3">
+      <i class="bi bi-arrow-left me-1"></i>Volver al blog
+    </a>
+  </div>
+</div>
+{% endblock %}
