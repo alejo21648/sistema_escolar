@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Cursos{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="fw-bold mb-0"><i class="bi bi-building me-2 text-warning"></i>Cursos</h2>
+  {% if user.es_admin %}
+  <div class="d-flex gap-2">
+    <a href="{% url 'academico:crear_curso' %}" class="btn btn-primary"><i class="bi bi-plus me-1"></i>Nuevo Curso</a>
+    <a href="{% url 'academico:inscribir_estudiante' %}" class="btn btn-outline-primary">Inscribir Estudiante</a>
+  </div>
+  {% endif %}
+</div>
+<div class="row g-3">
+  {% for curso in cursos %}
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="fw-bold">{{ curso.nombre }}</h5>
+        <p class="text-muted small">{{ curso.descripcion|default:"Sin descripción" }}</p>
+        <span class="badge bg-secondary">{{ curso.año_lectivo }}</span>
+        {% if not curso.activo %}<span class="badge bg-danger ms-1">Inactivo</span>{% endif %}
+      </div>
+      <div class="card-footer bg-transparent d-flex gap-2">
+        <a href="{% url 'academico:detalle_curso' curso.pk %}" class="btn btn-sm btn-outline-primary">Ver</a>
+        {% if user.es_admin %}
+        <a href="{% url 'academico:editar_curso' curso.pk %}" class="btn btn-sm btn-outline-secondary">Editar</a>
+        <a href="{% url 'academico:eliminar_curso' curso.pk %}" class="btn btn-sm btn-outline-danger">Eliminar</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12"><p class="text-muted text-center py-5">No hay cursos registrados.</p></div>
+  {% endfor %}
+</div>
+{% endblock %}

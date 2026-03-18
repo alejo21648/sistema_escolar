@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}{{ actividad.titulo }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="fw-bold mb-0">{{ actividad.titulo }}</h2>
+  <span class="badge bg-primary fs-6">{{ actividad.asignacion.materia }} — {{ actividad.asignacion.curso }}</span>
+</div>
+<div class="card mb-4">
+  <div class="card-body">
+    <p>{{ actividad.descripcion }}</p>
+    <p><strong>Fecha de entrega:</strong> {{ actividad.fecha_entrega|date:"d/m/Y H:i" }}</p>
+    <p><strong>Valor máximo:</strong> {{ actividad.valor_maximo }}</p>
+  </div>
+</div>
+<h4>Entregas ({{ entregas|length }})</h4>
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead class="table-light"><tr><th>Estudiante</th><th>Entregado</th><th>Calificación</th><th>Acción</th></tr></thead>
+      <tbody>
+        {% for e in entregas %}
+        <tr>
+          <td>{{ e.estudiante.get_full_name }}</td>
+          <td>{{ e.entregado_en|date:"d/m/Y H:i" }}</td>
+          <td>{% if e.calificacion %}<span class="badge bg-success">{{ e.calificacion }}</span>{% else %}<span class="badge bg-warning text-dark">Pendiente</span>{% endif %}</td>
+          <td>
+            {% if user.es_profesor %}
+            <a href="{% url 'actividades:calificar' e.pk %}" class="btn btn-sm btn-outline-primary">Calificar</a>
+            {% endif %}
+            {% if e.archivo %}<a href="{{ e.archivo.url }}" class="btn btn-sm btn-outline-secondary" target="_blank">Descargar</a>{% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="text-center text-muted py-3">Sin entregas aún.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

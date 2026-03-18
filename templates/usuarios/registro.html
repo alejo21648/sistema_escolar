@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% block title %}Registro de Estudiante{% endblock %}
+
+{% block extra_css %}
+<style>
+  body { background-color: transparent !important; margin: 0; }
+  .reg-input { width:100%; padding:10px 14px; border:1.5px solid #e5e7eb; border-radius:8px; font-size:0.92rem; outline:none; transition:border-color .2s; box-sizing:border-box; }
+  .reg-input:focus { border-color:#1a237e; }
+  .reg-label { display:block; font-size:0.88rem; font-weight:600; color:#374151; margin-bottom:5px; }
+  .reg-section { font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#9ca3af; border-bottom:1.5px solid #f3f4f6; padding-bottom:6px; margin:28px 0 16px; }
+  .reg-error { color:#dc2626; font-size:0.8rem; margin-top:4px; }
+  .reg-hint { color:#6b7280; font-size:0.78rem; margin-top:4px; }
+</style>
+{% endblock %}
+
+{% block auth_content %}
+<div style="display:flex; min-height:100vh;">
+
+  <!-- Panel izquierdo -->
+  <div style="
+    width: 380px;
+    min-width: 320px;
+    background: linear-gradient(145deg, #1a237e 0%, #283593 40%, #1565c0 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 48px 44px;
+    position: relative;
+    overflow: hidden;
+  ">
+    <!-- Círculos decorativos -->
+    <div style="position:absolute;top:-80px;right:-80px;width:400px;height:400px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.08);"></div>
+    <div style="position:absolute;top:-40px;right:-40px;width:300px;height:300px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.08);"></div>
+    <div style="position:absolute;bottom:-100px;left:-60px;width:350px;height:350px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.08);"></div>
+    <div style="position:absolute;bottom:-60px;left:-20px;width:250px;height:250px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.08);"></div>
+
+    <!-- Logo -->
+    <div style="position:relative;z-index:1;">
+      <div style="display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;background:rgba(255,255,255,0.15);border-radius:14px;">
+        <i class="bi bi-mortarboard-fill text-white" style="font-size:1.6rem;"></i>
+      </div>
+    </div>
+
+    <!-- Mensaje central -->
+    <div style="position:relative;z-index:1;">
+      <h1 style="color:#fff;font-size:2.4rem;font-weight:800;line-height:1.2;margin-bottom:20px;">
+        Crea tu<br>cuenta 🎓
+      </h1>
+      <p style="color:rgba(255,255,255,0.7);font-size:0.98rem;line-height:1.65;margin-bottom:24px;">
+        Necesitarás el <strong style="color:#fff;">código de estudiante</strong> que te proporcionó la institución para completar tu registro.
+      </p>
+      <div style="background:rgba(255,255,255,0.12);border-radius:12px;padding:16px 18px;">
+        <div style="display:flex;align-items:flex-start;gap:12px;">
+          <i class="bi bi-info-circle-fill" style="color:#93c5fd;font-size:1.1rem;margin-top:2px;flex-shrink:0;"></i>
+          <p style="color:rgba(255,255,255,0.85);font-size:0.85rem;line-height:1.55;margin:0;">
+            Los acudientes también usarán tu código para vincularse contigo en el sistema.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="position:relative;z-index:1;">
+      <p style="color:rgba(255,255,255,0.4);font-size:0.8rem;margin:0;">
+        © 2026 Sistema Escolar. Todos los derechos reservados.
+      </p>
+    </div>
+  </div>
+
+  <!-- Panel derecho (scrollable) -->
+  <div style="flex:1;background:#fff;overflow-y:auto;display:flex;flex-direction:column;justify-content:flex-start;padding:56px 64px;">
+
+    <p style="color:#6b7280;font-size:0.85rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:28px;">
+      Sistema Escolar
+    </p>
+
+    <h2 style="font-size:1.9rem;font-weight:800;color:#111827;margin-bottom:4px;">Registro de Estudiante</h2>
+    <p style="color:#6b7280;margin-bottom:8px;">
+      ¿Ya tienes cuenta?
+      <a href="{% url 'usuarios:login' %}" style="color:#1a237e;font-weight:600;text-decoration:underline;">Inicia sesión aquí</a>
+    </p>
+
+    {% if form.non_field_errors %}
+      <div style="background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:10px 14px;border-radius:8px;font-size:0.88rem;margin-bottom:16px;">
+        {{ form.non_field_errors.0 }}
+      </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" style="max-width:560px;">
+      {% csrf_token %}
+
+      <!-- Datos personales -->
+      <div class="reg-section"><i class="bi bi-person me-2"></i>Datos Personales</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <label class="reg-label">{{ form.first_name.label }} <span style="color:#dc2626;">*</span></label>
+          {{ form.first_name }}
+          {% if form.first_name.errors %}<div class="reg-error">{{ form.first_name.errors.0 }}</div>{% endif %}
+        </div>
+        <div>
+          <label class="reg-label">{{ form.last_name.label }} <span style="color:#dc2626;">*</span></label>
+          {{ form.last_name }}
+          {% if form.last_name.errors %}<div class="reg-error">{{ form.last_name.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div style="margin-top:16px;">
+        <label class="reg-label">{{ form.email.label }} <span style="color:#dc2626;">*</span></label>
+        {{ form.email }}
+        {% if form.email.errors %}<div class="reg-error">{{ form.email.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+        <div>
+          <label class="reg-label">{{ form.telefono.label }}</label>
+          {{ form.telefono }}
+          {% if form.telefono.errors %}<div class="reg-error">{{ form.telefono.errors.0 }}</div>{% endif %}
+        </div>
+        <div>
+          <label class="reg-label">{{ form.fecha_nacimiento.label }}</label>
+          {{ form.fecha_nacimiento }}
+          {% if form.fecha_nacimiento.errors %}<div class="reg-error">{{ form.fecha_nacimiento.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+
+      <!-- Credenciales -->
+      <div class="reg-section"><i class="bi bi-key me-2"></i>Credenciales</div>
+
+      <div style="margin-bottom:16px;">
+        <label class="reg-label">{{ form.username.label }} <span style="color:#dc2626;">*</span></label>
+        {{ form.username }}
+        {% if form.username.errors %}<div class="reg-error">{{ form.username.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <label class="reg-label">{{ form.password1.label }} <span style="color:#dc2626;">*</span></label>
+          {{ form.password1 }}
+          {% if form.password1.errors %}<div class="reg-error">{{ form.password1.errors.0 }}</div>{% endif %}
+        </div>
+        <div>
+          <label class="reg-label">{{ form.password2.label }} <span style="color:#dc2626;">*</span></label>
+          {{ form.password2 }}
+          {% if form.password2.errors %}<div class="reg-error">{{ form.password2.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+
+      <!-- Código de acceso -->
+      <div class="reg-section"><i class="bi bi-code-square me-2"></i>Código de Acceso</div>
+
+      <div style="margin-bottom:16px;">
+        <label class="reg-label">{{ form.codigo_estudiante.label }} <span style="color:#dc2626;">*</span></label>
+        {{ form.codigo_estudiante }}
+        <div class="reg-hint"><i class="bi bi-exclamation-circle me-1"></i>Código único asignado por la institución.</div>
+        {% if form.codigo_estudiante.errors %}<div class="reg-error">{{ form.codigo_estudiante.errors.0 }}</div>{% endif %}
+      </div>
+
+      <!-- Foto de perfil -->
+      <div class="reg-section"><i class="bi bi-image me-2"></i>Foto de Perfil <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:0.78rem;">(opcional)</span></div>
+
+      <div style="margin-bottom:24px;">
+        <label class="reg-label">{{ form.foto.label }}</label>
+        {{ form.foto }}
+        {% if form.foto.errors %}<div class="reg-error">{{ form.foto.errors.0 }}</div>{% endif %}
+      </div>
+
+      <button type="submit" style="
+        width: 100%;
+        padding: 14px;
+        background: #1a237e;
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: background .2s;
+        margin-bottom: 32px;
+      " onmouseover="this.style.background='#283593'" onmouseout="this.style.background='#1a237e'">
+        <i class="bi bi-person-check"></i> Crear Cuenta
+      </button>
+
+    </form>
+  </div>
+
+</div>
+{% endblock %}

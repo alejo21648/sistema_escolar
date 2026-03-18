@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Inventario{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="fw-bold mb-0"><i class="bi bi-box me-2 text-warning"></i>Inventario</h2>
+  {% if user.es_admin %}<a href="{% url 'inventario:crear' %}" class="btn btn-primary"><i class="bi bi-plus me-1"></i>Nuevo Producto</a>{% endif %}
+</div>
+<div class="row g-3">
+  {% for p in productos %}
+  <div class="col-md-4">
+    <div class="card h-100">
+      {% if p.imagen %}<img src="{{ p.imagen.url }}" class="card-img-top" style="height:180px;object-fit:cover">{% endif %}
+      <div class="card-body">
+        <h5 class="fw-bold">{{ p.nombre }}</h5>
+        <p class="text-muted small">{{ p.descripcion|truncatechars:80|default:"" }}</p>
+        <p class="fs-5 fw-bold text-success">${{ p.precio }}</p>
+        <p class="text-muted small">Stock: {{ p.stock }} unidades</p>
+        {% if p.categoria %}<span class="badge bg-secondary">{{ p.categoria }}</span>{% endif %}
+      </div>
+      {% if user.es_admin %}
+      <div class="card-footer bg-transparent d-flex gap-2">
+        <a href="{% url 'inventario:editar' p.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
+        <a href="{% url 'inventario:eliminar' p.pk %}" class="btn btn-sm btn-outline-danger">Eliminar</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12"><p class="text-muted text-center py-5">No hay productos en inventario.</p></div>
+  {% endfor %}
+</div>
+{% endblock %}

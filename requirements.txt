@@ -1,0 +1,11 @@
+Django==4.2.16
+<<<<<<< HEAD
+Pillow>=11.0.0
+python-decouple==3.8
+PyMySQL>=1.1.0
+cryptography>=41.0.0
+=======
+Pillow==10.4.0
+python-decouple==3.8
+mysqlclient==2.2.4
+>>>>>>> 19d2c3af1c98f2eda2fa8b1aec62310d8c577731

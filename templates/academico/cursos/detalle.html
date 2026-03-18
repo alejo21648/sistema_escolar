@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}{{ curso }}{% endblock %}
+{% block content %}
+<h2 class="fw-bold mb-4">{{ curso.nombre }}</h2>
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header"><h5 class="mb-0">Estudiantes ({{ estudiantes|length }})</h5></div>
+      <ul class="list-group list-group-flush">
+        {% for e in estudiantes %}
+        <li class="list-group-item">{{ e.estudiante.get_full_name }}</li>
+        {% empty %}
+        <li class="list-group-item text-muted">Sin estudiantes.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header"><h5 class="mb-0">Materias y Profesores</h5></div>
+      <ul class="list-group list-group-flush">
+        {% for a in asignaciones %}
+        <li class="list-group-item"><strong>{{ a.materia }}</strong> — {{ a.profesor.get_full_name }}</li>
+        {% empty %}
+        <li class="list-group-item text-muted">Sin asignaciones.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,337 @@
+{% extends 'base.html' %}
+{% block title %}Nueva Cotización{% endblock %}
+{% block page_title %}Nueva Cotización{% endblock %}
+
+{% block content %}
+<style>
+  .cot-header {
+    background: linear-gradient(135deg, #1a3a5c 0%, #0d6efd 100%);
+    border-radius: 16px 16px 0 0;
+    padding: 28px 32px;
+    color: #fff;
+  }
+  .cot-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.10);
+    overflow: hidden;
+  }
+  .cot-body { padding: 32px; background: #fff; }
+  .item-card {
+    background: #f8fafd;
+    border: 1.5px solid #e3eaf3;
+    border-radius: 12px;
+    padding: 20px 22px 12px;
+    margin-bottom: 16px;
+    position: relative;
+    transition: box-shadow .2s;
+  }
+  .item-card:hover { box-shadow: 0 2px 12px rgba(13,110,253,.10); }
+  .item-card .item-num {
+    position: absolute;
+    top: -14px; left: 20px;
+    background: #0d6efd;
+    color: #fff;
+    font-size: .75rem;
+    font-weight: 700;
+    padding: 2px 12px;
+    border-radius: 20px;
+    letter-spacing: .04em;
+  }
+  .precio-display {
+    background: #eaf2ff;
+    border: 1.5px solid #b6d4fe;
+    color: #084298;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 8px;
+    padding: 8px 14px;
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+  }
+  .btn-add-item {
+    border: 2px dashed #0d6efd;
+    color: #0d6efd;
+    background: #f0f6ff;
+    border-radius: 10px;
+    padding: 10px;
+    width: 100%;
+    font-weight: 600;
+    transition: background .2s;
+  }
+  .btn-add-item:hover { background: #dbeafe; color: #0a58ca; }
+  .btn-remove {
+    position: absolute;
+    top: 10px; right: 14px;
+    background: none;
+    border: none;
+    color: #dc3545;
+    font-size: 1.1rem;
+    cursor: pointer;
+    opacity: .7;
+    transition: opacity .2s;
+  }
+  .btn-remove:hover { opacity: 1; }
+  .subtotal-row {
+    background: #f0f6ff;
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 1.05rem;
+  }
+  .form-label { font-weight: 600; color: #344054; font-size: .92rem; margin-bottom: 5px; }
+  .section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1a3a5c;
+    border-bottom: 2px solid #e3eaf3;
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+  }
+</style>
+
+<div class="row justify-content-center" style="max-width:800px; margin:0 auto;">
+  <div class="col-12">
+
+    <div class="cot-card mb-4">
+      <!-- Header -->
+      <div class="cot-header d-flex align-items-center gap-3">
+        <div style="background:rgba(255,255,255,.2);border-radius:12px;padding:12px;">
+          <i class="bi bi-receipt-cutoff fs-3"></i>
+        </div>
+        <div>
+          <h4 class="mb-0 fw-bold">Nueva Cotización</h4>
+          <small class="opacity-75">Selecciona los productos que deseas cotizar</small>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="cot-body">
+        <form method="post" id="cotizacion-form">
+          {% csrf_token %}
+
+          <!-- Observación -->
+          <div class="mb-4">
+            <p class="section-title"><i class="bi bi-chat-left-text me-2 text-primary"></i>Observación</p>
+            <div class="mb-1">
+              <label class="form-label">Nota adicional <span class="text-muted fw-normal">(opcional)</span></label>
+              {{ form.observacion }}
+              {% if form.observacion.errors %}
+                <div class="text-danger small mt-1">{{ form.observacion.errors.0 }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Items -->
+          <p class="section-title"><i class="bi bi-bag me-2 text-primary"></i>Productos a cotizar</p>
+          {{ formset.management_form }}
+
+          <div id="items-container">
+            {% for f in formset %}
+              <div class="item-card {% if forloop.last and not forloop.first %}d-none{% endif %}" data-index="{{ forloop.counter0 }}">
+                <span class="item-num">Producto {{ forloop.counter }}</span>
+
+                {% if not forloop.first %}
+                  <button type="button" class="btn-remove btn-eliminar-item" title="Eliminar">
+                    <i class="bi bi-x-circle-fill"></i>
+                  </button>
+                {% endif %}
+
+                {{ f.id }}
+                {{ f.precio_unitario }}
+                {% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
+                <div style="display:none;">{{ f.DELETE }}</div>
+
+                <div class="row g-3 mt-1">
+                  <div class="col-md-6">
+                    <label class="form-label"><i class="bi bi-box me-1 text-primary"></i>Producto</label>
+                    {{ f.producto }}
+                    {% if f.producto.errors %}
+                      <div class="text-danger small mt-1">{{ f.producto.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label"><i class="bi bi-hash me-1 text-primary"></i>Cantidad</label>
+                    {{ f.cantidad }}
+                    {% if f.cantidad.errors %}
+                      <div class="text-danger small mt-1">{{ f.cantidad.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label"><i class="bi bi-tag me-1 text-primary"></i>Precio unitario</label>
+                    <div class="precio-display precio-visible">
+                      <span class="precio-texto text-muted fst-italic" style="font-size:.85rem;">
+                        Selecciona un producto
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="subtotal-row mt-3 d-flex justify-content-between align-items-center">
+                  <span class="text-muted small">Subtotal estimado</span>
+                  <span class="fw-bold text-primary subtotal-valor">—</span>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+
+          <button type="button" class="btn-add-item mb-4" id="btn-agregar">
+            <i class="bi bi-plus-circle me-2"></i>Agregar otro producto
+          </button>
+
+          <div class="d-flex justify-content-end mb-4">
+            <div style="background:#1a3a5c;border-radius:12px;padding:14px 28px;color:#fff;min-width:220px;">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-semibold opacity-75 me-4">Total estimado</span>
+                <span class="fs-5 fw-bold" id="total-general">$0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex gap-3">
+            <button type="submit" class="btn btn-primary px-4 py-2 fw-semibold">
+              <i class="bi bi-send me-2"></i>Enviar cotización
+            </button>
+            <a href="javascript:history.back()" class="btn btn-outline-secondary px-4 py-2">Cancelar</a>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const PRECIOS = {{ precios_json|safe }};
+let totalForms = parseInt(document.querySelector('[name$=TOTAL_FORMS]').value);
+
+function formatPesos(val) {
+  if (!val) return '—';
+  return '$' + parseFloat(val).toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+function actualizarPrecio(card) {
+  const select    = card.querySelector('.producto-select');
+  const cantInput = card.querySelector('input[name$="-cantidad"]');
+  const precioHidden  = card.querySelector('input[name$="-precio_unitario"]');
+  const precioTexto   = card.querySelector('.precio-texto');
+  const subtotalValor = card.querySelector('.subtotal-valor');
+
+  const pid    = select ? select.value : '';
+  const precio = PRECIOS[pid] ? parseFloat(PRECIOS[pid]) : null;
+  const cant   = cantInput ? parseInt(cantInput.value) || 1 : 1;
+
+  if (precio !== null) {
+    if (precioHidden)  precioHidden.value = precio.toFixed(2);
+    if (precioTexto) {
+      precioTexto.textContent = formatPesos(precio);
+      precioTexto.classList.remove('text-muted', 'fst-italic');
+      precioTexto.style.fontSize = '1rem';
+    }
+    if (subtotalValor) subtotalValor.textContent = formatPesos(precio * cant);
+  } else {
+    if (precioHidden)  precioHidden.value = '';
+    if (precioTexto) {
+      precioTexto.textContent = 'Selecciona un producto';
+      precioTexto.classList.add('text-muted', 'fst-italic');
+      precioTexto.style.fontSize = '.85rem';
+    }
+    if (subtotalValor) subtotalValor.textContent = '—';
+  }
+  actualizarTotal();
+}
+
+function actualizarTotal() {
+  let total = 0;
+  document.querySelectorAll('.item-card').forEach(card => {
+    if (card.style.display === 'none') return;
+    const hidden = card.querySelector('input[name$="-precio_unitario"]');
+    const cant   = card.querySelector('input[name$="-cantidad"]');
+    const precio = hidden && hidden.value ? parseFloat(hidden.value) : 0;
+    const c      = cant ? parseInt(cant.value) || 1 : 1;
+    total += precio * c;
+  });
+  document.getElementById('total-general').textContent = formatPesos(total || null);
+}
+
+function bindCard(card) {
+  const select = card.querySelector('.producto-select');
+  const cant   = card.querySelector('input[name$="-cantidad"]');
+  if (select) select.addEventListener('change', () => actualizarPrecio(card));
+  if (cant)   cant.addEventListener('input',  () => actualizarPrecio(card));
+  actualizarPrecio(card);
+}
+
+document.querySelectorAll('.item-card').forEach(bindCard);
+
+document.getElementById('btn-agregar').addEventListener('click', () => {
+  const container = document.getElementById('items-container');
+  const template  = container.querySelector('.item-card');
+  const newCard   = template.cloneNode(true);
+  const idx       = totalForms;
+
+  newCard.querySelectorAll('[name],[id],[for]').forEach(el => {
+    ['name','id','for'].forEach(attr => {
+      if (el.getAttribute(attr)) {
+        el.setAttribute(attr, el.getAttribute(attr).replace(/-\d+-/, `-${idx}-`));
+      }
+    });
+  });
+
+  newCard.querySelectorAll('input:not([type=hidden])').forEach(i => i.value = i.type === 'number' ? 1 : '');
+  newCard.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+  newCard.querySelectorAll('input[type=hidden]').forEach(h => {
+    if (!h.name.includes('TOTAL') && !h.name.includes('INITIAL') && !h.name.includes('csrfmiddlewaretoken')) {
+      h.value = '';
+    }
+  });
+
+  const numSpan = newCard.querySelector('.item-num');
+  if (numSpan) numSpan.textContent = `Producto ${idx + 1}`;
+
+  newCard.classList.remove('d-none');
+  newCard.style.display = '';
+  newCard.style.opacity = '1';
+
+  let btnRem = newCard.querySelector('.btn-eliminar-item');
+  if (!btnRem) {
+    btnRem = document.createElement('button');
+    btnRem.type = 'button';
+    btnRem.className = 'btn-remove btn-eliminar-item';
+    btnRem.title = 'Eliminar';
+    btnRem.innerHTML = '<i class="bi bi-x-circle-fill"></i>';
+    newCard.appendChild(btnRem);
+  }
+  btnRem.addEventListener('click', () => eliminarCard(newCard));
+
+  const precioTexto = newCard.querySelector('.precio-texto');
+  if (precioTexto) {
+    precioTexto.textContent = 'Selecciona un producto';
+    precioTexto.classList.add('text-muted', 'fst-italic');
+    precioTexto.style.fontSize = '.85rem';
+  }
+  const subtotalValor = newCard.querySelector('.subtotal-valor');
+  if (subtotalValor) subtotalValor.textContent = '—';
+
+  container.appendChild(newCard);
+  totalForms++;
+  document.querySelector('[name$=TOTAL_FORMS]').value = totalForms;
+  bindCard(newCard);
+});
+
+function eliminarCard(card) {
+  const deleteCheck = card.querySelector('input[type=checkbox][name$="-DELETE"]');
+  if (deleteCheck) deleteCheck.checked = true;
+  card.style.transition = 'opacity .25s';
+  card.style.opacity = '0';
+  setTimeout(() => { card.style.display = 'none'; actualizarTotal(); }, 260);
+}
+
+document.querySelectorAll('.btn-eliminar-item').forEach(btn => {
+  btn.addEventListener('click', () => eliminarCard(btn.closest('.item-card')));
+});
+</script>
+{% endblock %}

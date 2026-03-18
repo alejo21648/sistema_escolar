@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Sistema Escolar{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f0f2f5;
+    }
+
+    /* ── Sidebar ─────────────────────────────── */
+    .sidebar {
+      width: 240px;
+      min-width: 240px;
+      height: 100vh;
+      background: #1a237e;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar-nav-scroll {
+      flex: 1 1 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.2) transparent;
+    }
+
+    .sidebar-nav-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .sidebar-nav-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.2);
+      border-radius: 4px;
+    }
+
+    .sidebar .logo {
+      padding: 20px;
+      color: white;
+      font-weight: 700;
+      font-size: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+      flex-shrink: 0;
+    }
+
+    .sidebar .nav-section {
+      padding: 12px 16px 4px;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      color: #7986cb;
+      letter-spacing: 1px;
+    }
+
+    .sidebar a.nav-link {
+      color: #c5cae9;
+      padding: 8px 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 6px;
+      margin: 1px 8px;
+      font-size: 0.88rem;
+    }
+
+    .sidebar a.nav-link:hover,
+    .sidebar a.nav-link.active {
+      background: rgba(255, 255, 255, 0.12);
+      color: white;
+    }
+
+    .sidebar .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      margin-top: auto;
+      flex-shrink: 0;
+    }
+
+    .sidebar .sidebar-footer .username {
+      color: white;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .sidebar .sidebar-footer .rolname {
+      color: #9fa8da;
+      font-size: 0.75rem;
+    }
+
+    /* ── Main content ────────────────────────── */
+    .main-content {
+      margin-left: 240px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      background: white;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .page-area {
+      padding: 24px;
+      flex-grow: 1;
+    }
+
+    /* ── Cards & misc ────────────────────────── */
+    .card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, .08);
+    }
+
+    .stat-card {
+      transition: transform .2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+{% if user.is_authenticated %}
+
+  <!-- ═══════════════════════════════════════ SIDEBAR -->
+  <div class="sidebar">
+
+    <div class="logo">
+      <i class="bi bi-mortarboard-fill me-2"></i>Sistema Escolar
+    </div>
+
+    <!-- ADMIN -->
+    <div class="sidebar-nav-scroll">
+    {% if user.es_admin %}
+    <div class="nav-section">General</div>
+    <a href="{% url 'dashboard:home' %}" class="nav-link">
+      <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+    <a href="{% url 'usuarios:lista' %}" class="nav-link">
+      <i class="bi bi-people"></i> Usuarios
+    </a>
+
+    <div class="nav-section">Académico</div>
+    <a href="{% url 'academico:lista_cursos' %}" class="nav-link">
+      <i class="bi bi-grid-3x3-gap"></i> Cursos
+    </a>
+    <a href="{% url 'academico:lista_materias' %}" class="nav-link">
+      <i class="bi bi-book"></i> Materias
+    </a>
+    <a href="{% url 'academico:lista_asignaciones' %}" class="nav-link">
+      <i class="bi bi-diagram-3"></i> Asignaciones
+    </a>
+    <a href="{% url 'actividades:lista' %}" class="nav-link">
+      <i class="bi bi-journal-check"></i> Actividades
+    </a>
+    <a href="{% url 'asistencia:lista' %}" class="nav-link">
+      <i class="bi bi-calendar-check"></i> Asistencia
+    </a>
+    <a href="{% url 'notas:lista' %}" class="nav-link">
+      <i class="bi bi-pencil-square"></i> Notas
+    </a>
+
+    <div class="nav-section">Inventario</div>
+    <a href="{% url 'inventario:lista' %}" class="nav-link">
+      <i class="bi bi-box-seam"></i> Inventario
+    </a>
+    <a href="{% url 'cotizaciones:lista' %}" class="nav-link">
+      <i class="bi bi-receipt"></i> Cotizaciones
+    </a>
+    <a href="{% url 'comercial:lista_productos' %}" class="nav-link">
+      <i class="bi bi-bag"></i> Productos (Comercial)
+    </a>
+    <a href="{% url 'comercial:lista_cotizaciones' %}" class="nav-link">
+      <i class="bi bi-file-earmark-text"></i> Cotizaciones (Comercial)
+    </a>
+
+    <div class="nav-section">Reportes</div>
+    <a href="{% url 'reportes:admin_usuarios' %}" class="nav-link">
+      <i class="bi bi-person-lines-fill"></i> Usuarios
+    </a>
+    <a href="{% url 'reportes:admin_academico' %}" class="nav-link">
+      <i class="bi bi-graph-up"></i> Académico
+    </a>
+    <a href="{% url 'reportes:admin_cotizaciones' %}" class="nav-link">
+      <i class="bi bi-bar-chart-line"></i> Cotizaciones
+    </a>
+    <a href="{% url 'reportes:admin_trabajo' %}" class="nav-link">
+      <i class="bi bi-briefcase"></i> Carga laboral
+    </a>
+
+    <div class="nav-section">Comunidad</div>
+    <a href="{% url 'blog:lista' %}" class="nav-link">
+      <i class="bi bi-newspaper"></i> Blog
+    </a>
+    {% endif %}
+
+    <!-- PROFESOR -->
+    {% if user.es_profesor %}
+    <div class="nav-section">Mi trabajo</div>
+    <a href="{% url 'dashboard:home' %}" class="nav-link">
+      <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+    <a href="{% url 'academico:mis_clases' %}" class="nav-link">
+      <i class="bi bi-calendar3"></i> Mis clases
+    </a>
+    <a href="{% url 'actividades:lista' %}" class="nav-link">
+      <i class="bi bi-journal-check"></i> Actividades
+    </a>
+    <a href="{% url 'asistencia:lista' %}" class="nav-link">
+      <i class="bi bi-calendar-check"></i> Asistencia
+    </a>
+    <a href="{% url 'notas:lista' %}" class="nav-link">
+      <i class="bi bi-pencil-square"></i> Notas
+    </a>
+
+    <div class="nav-section">Reportes</div>
+    <a href="{% url 'reportes:profesor_notas' %}" class="nav-link">
+      <i class="bi bi-graph-up"></i> Reporte notas
+    </a>
+    <a href="{% url 'reportes:profesor_asistencia' %}" class="nav-link">
+      <i class="bi bi-bar-chart"></i> Reporte asistencia
+    </a>
+
+    <div class="nav-section">Comunidad</div>
+    <a href="{% url 'blog:lista' %}" class="nav-link">
+      <i class="bi bi-newspaper"></i> Blog
+    </a>
+    {% endif %}
+
+    <!-- ESTUDIANTE -->
+    {% if user.es_estudiante %}
+    <div class="nav-section">Mi información</div>
+    <a href="{% url 'dashboard:home' %}" class="nav-link">
+      <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+    <a href="{% url 'actividades:lista' %}" class="nav-link">
+      <i class="bi bi-clipboard-check"></i> Mis actividades
+    </a>
+    <a href="{% url 'notas:lista' %}" class="nav-link">
+      <i class="bi bi-bar-chart"></i> Mis notas
+    </a>
+    <a href="{% url 'asistencia:lista' %}" class="nav-link">
+      <i class="bi bi-calendar"></i> Asistencia
+    </a>
+
+    <div class="nav-section">Comunidad</div>
+    <a href="{% url 'blog:lista' %}" class="nav-link">
+      <i class="bi bi-newspaper"></i> Blog
+    </a>
+    {% endif %}
+
+    <!-- ACUDIENTE -->
+    {% if user.es_acudiente %}
+    <div class="nav-section">Mi familia</div>
+    <a href="{% url 'dashboard:home' %}" class="nav-link">
+      <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+    <a href="{% url 'cotizaciones:lista' %}" class="nav-link">
+      <i class="bi bi-receipt"></i> Cotizaciones
+    </a>
+    <a href="{% url 'comercial:lista_cotizaciones' %}" class="nav-link">
+      <i class="bi bi-file-earmark-text"></i> Comercial
+    </a>
+    <a href="{% url 'inventario:lista' %}" class="nav-link">
+      <i class="bi bi-shop"></i> Productos
+    </a>
+
+    <div class="nav-section">Comunidad</div>
+    <a href="{% url 'blog:lista' %}" class="nav-link">
+      <i class="bi bi-newspaper"></i> Blog
+    </a>
+    {% endif %}
+
+    </div><!-- end sidebar-nav-scroll -->
+
+    <!-- Footer del sidebar -->
+    <div class="sidebar-footer">
+      <a href="{% url 'usuarios:perfil' %}" class="nav-link mb-1" style="padding-left:0;">
+        <i class="bi bi-person-circle"></i>
+        <span>
+          <div class="username">{{ user.get_full_name|default:user.username }}</div>
+          <div class="rolname">{{ user.get_rol_display }}</div>
+        </span>
+      </a>
+      <a href="{% url 'usuarios:logout' %}" class="btn btn-outline-light btn-sm w-100 mt-1">
+        <i class="bi bi-box-arrow-right me-1"></i>Cerrar sesión
+      </a>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════ MAIN -->
+  <div class="main-content">
+
+    <div class="topbar">
+      <span class="fw-semibold text-secondary">{% block page_title %}{% endblock %}</span>
+      <div>
+        {% if user.es_admin %}
+          <span class="badge bg-danger">Administrador</span>
+        {% elif user.es_profesor %}
+          <span class="badge bg-primary">Profesor</span>
+        {% elif user.es_estudiante %}
+          <span class="badge bg-success">Estudiante</span>
+        {% elif user.es_acudiente %}
+          <span class="badge bg-warning text-dark">Acudiente</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="page-area">
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      {% block content %}{% endblock %}
+
+    </div>
+  </div>
+
+{% else %}
+  {% block auth_content %}{% endblock %}
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

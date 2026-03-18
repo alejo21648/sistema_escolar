@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% block titulo %}Cotizaciones{% endblock %}
+{% block page_title %}Cotizaciones{% endblock %}
+
+{% block contenido %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>Cotizaciones</h3>
+    {% if user.es_admin or user.es_acudiente %}
+    <a href="{% url 'comercial:crear_cotizacion' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>Nueva cotización
+    </a>
+    {% endif %}
+</div>
+
+<!-- BARRA DE FILTROS -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+
+            <div class="col-md-5">
+                <label class="form-label fw-semibold small text-muted">
+                    <i class="bi bi-search me-1"></i>Buscar
+                </label>
+                <input type="text" name="q" value="{{ busqueda }}" class="form-control"
+                    placeholder="Nombre del acudiente u observaciones...">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-semibold small text-muted">
+                    <i class="bi bi-tag me-1"></i>Estado
+                </label>
+                <select name="estado" class="form-select">
+                    <option value="">Todos los estados</option>
+                    {% for value, label in estados %}
+                        {% if estado == value %}
+                        <option value="{{ value }}" selected>{{ label }}</option>
+                        {% else %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-funnel me-1"></i>Filtrar
+                </button>
+                <a href="{% url 'comercial:lista_cotizaciones' %}" class="btn btn-outline-secondary" title="Limpiar">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+{% if busqueda or estado %}
+<p class="text-muted small mb-2">
+    <i class="bi bi-info-circle me-1"></i>
+    {{ cotizaciones.count }} resultado{{ cotizaciones.count|pluralize }} encontrado{{ cotizaciones.count|pluralize }}
+    {% if busqueda %} para "<strong>{{ busqueda }}</strong>"{% endif %}
+</p>
+{% endif %}
+
+<!-- TABLA -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    {% if user.es_admin %}
+                    <th>Acudiente</th>
+                    {% endif %}
+                    <th>Fecha</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                    <th>Observaciones</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cotizacion in cotizaciones %}
+                <tr>
+                    <td><strong>#{{ cotizacion.pk }}</strong></td>
+                    {% if user.es_admin %}
+                    <td>{{ cotizacion.acudiente.get_full_name }}</td>
+                    {% endif %}
+                    <td>{{ cotizacion.fecha|date:"d/m/Y" }}</td>
+                    <td>
+                        <strong>${{ cotizacion.total|floatformat:0 }}</strong>
+                    </td>
+                    <td>
+                        {% if cotizacion.estado == 'pendiente' %}
+                            <span class="badge bg-warning text-dark">Pendiente</span>
+                        {% elif cotizacion.estado == 'aprobada' %}
+                            <span class="badge bg-success">Aprobada</span>
+                        {% elif cotizacion.estado == 'rechazada' %}
+                            <span class="badge bg-danger">Rechazada</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ cotizacion.estado }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted small">
+                        {{ cotizacion.observaciones|default:"—"|truncatechars:40 }}
+                    </td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a href="{% url 'comercial:detalle_cotizacion' cotizacion.pk %}"
+                               class="btn btn-sm btn-outline-info" title="Ver detalle">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            {% if user.es_admin %}
+                            <a href="{% url 'comercial:editar_cotizacion' cotizacion.pk %}"
+                               class="btn btn-sm btn-outline-warning" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="post"
+                                  action="{% url 'comercial:eliminar_cotizacion' cotizacion.pk %}"
+                                  style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="btn btn-sm btn-outline-danger"
+                                        title="Eliminar"
+                                        onclick="return confirm('¿Eliminar la cotización #{{ cotizacion.pk }}?')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        <i class="bi bi-search me-2"></i>
+                        No se encontraron cotizaciones con los filtros aplicados.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
