@@ -87,6 +87,7 @@ def editar_materia(request, pk):
 
 # ─── ASIGNACIONES ─────────────────────────────────────────────────────────────
 @login_required
+<<<<<<< HEAD
 def mis_clases(request):
     """Vista exclusiva para el profesor: muestra solo sus asignaciones."""
     if not request.user.es_profesor:
@@ -97,6 +98,8 @@ def mis_clases(request):
     return render(request, 'academico/asignaciones/mis_clases.html', {'asignaciones': asignaciones})
 
 @login_required
+=======
+>>>>>>> 19d2c3af1c98f2eda2fa8b1aec62310d8c577731
 def lista_asignaciones(request):
     if not request.user.es_admin:
         return redirect('dashboard:home')

@@ -33,9 +33,12 @@ INSTALLED_APPS = [
     'apps.inventario',
     'apps.cotizaciones',
     'apps.dashboard',
+<<<<<<< HEAD
     'apps.blog',
     'apps.reportes',
     'apps.comercial',
+=======
+>>>>>>> 19d2c3af1c98f2eda2fa8b1aec62310d8c577731
 ]
 
 MIDDLEWARE = [

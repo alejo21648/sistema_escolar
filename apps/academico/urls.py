@@ -16,7 +16,10 @@ urlpatterns = [
     path('materias/crear/',           views.crear_materia,      name='crear_materia'),
     path('materias/<int:pk>/editar/', views.editar_materia,     name='editar_materia'),
     # Asignaciones
+<<<<<<< HEAD
     path('mis-clases/',                     views.mis_clases,           name='mis_clases'),
+=======
+>>>>>>> 19d2c3af1c98f2eda2fa8b1aec62310d8c577731
     path('asignaciones/',                   views.lista_asignaciones,   name='lista_asignaciones'),
     path('asignaciones/crear/',             views.crear_asignacion,     name='crear_asignacion'),
     path('asignaciones/<int:pk>/eliminar/', views.eliminar_asignacion,  name='eliminar_asignacion'),

@@ -31,7 +31,11 @@ if not exist .env (
     copy .env.example .env
     echo.
 <<<<<<< HEAD
+<<<<<<< HEAD
     echo  IMPORTANTE: Con XAMPP el DB_PASSWORD debe quedar VACIO (sin contrasena)
+=======
+    echo  IMPORTANTE: Edita el archivo .env con tu contrasena de MySQL
+>>>>>>> 19d2c3af1c98f2eda2fa8b1aec62310d8c577731
 =======
     echo  IMPORTANTE: Edita el archivo .env con tu contrasena de MySQL
 >>>>>>> 19d2c3af1c98f2eda2fa8b1aec62310d8c577731
